@@ -1,12 +1,7 @@
 import XInput
 from pynput.keyboard import Key, Controller
 import time
-
-print("ZppControllerToChat")
-
-if not XInput.get_connected()[0]:
-    print("Manette non détectée :-(")
-    quit()
+import pyperclip
 
 class MyHandler(XInput.EventHandler):
     def __init__(self, *controllers, filter=...):
@@ -33,16 +28,27 @@ class MyHandler(XInput.EventHandler):
                     self.type_word("b")
                 case XInput.BUTTON_START:
                     self.type_word("start")
+                case XInput.BUTTON_RIGHT_SHOULDER:
+                    self.type_paste(pyperclip.paste())
                 case XInput.BUTTON_LEFT_THUMB:
                     self.stop = True
                 case _:
                     print(event)
 
+
     def process_trigger_event(self, event):
         return
 
     def process_stick_event(self, event):
-        return
+        if event.type == XInput.EVENT_STICK_MOVED:
+            if event.y >= 0.5 and event.x < 0.5 and event.x > -0.5:
+                self.type_word("haut")
+            elif event.y <= -0.5 and event.x < 0.5 and event.x > -0.5:
+                self.type_word("bas")
+            elif event.x <= -0.5 and event.y < 0.5 and event.y > -0.5:
+                self.type_word("gauche")
+            elif event.x >= 0.5 and event.y < 0.5 and event.y > -0.5:
+                self.type_word("droite")
 
     def process_connection_event(self, event):
         return
@@ -52,7 +58,6 @@ class MyHandler(XInput.EventHandler):
 
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
-
             output = ""
             if self.upper:
                 output = word.upper()
@@ -67,11 +72,27 @@ class MyHandler(XInput.EventHandler):
 
             self.upper = not self.upper
 
+    def type_paste(self, word):
+        now = time.time()
+        if (now - self.last_keystroke) > 1.5:
+            self.last_keystroke = now
+            print(word)
+            for c in word:
+                self.press_key(c)
+            self.press_key(Key.enter)
+
     def press_key(self, character):
         self.keyboard.press(character)
         self.keyboard.release(character)
 
-filter = XInput.BUTTON_DPAD_UP + XInput.BUTTON_DPAD_DOWN + XInput.BUTTON_DPAD_RIGHT + XInput.BUTTON_DPAD_LEFT + XInput.BUTTON_A + XInput.BUTTON_B + XInput.BUTTON_START + XInput.BUTTON_LEFT_THUMB
+print("ZppControllerToChat")
+
+if not XInput.get_connected()[0]:
+    print("Manette non détectée :-(")
+    time.sleep(2)
+    quit()
+
+filter = XInput.BUTTON_RIGHT_SHOULDER + XInput.STICK_LEFT + XInput.STICK_RIGHT + XInput.BUTTON_DPAD_UP + XInput.BUTTON_DPAD_DOWN + XInput.BUTTON_DPAD_RIGHT + XInput.BUTTON_DPAD_LEFT + XInput.BUTTON_A + XInput.BUTTON_B + XInput.BUTTON_START + XInput.BUTTON_LEFT_THUMB
 my_handler = MyHandler(0)
 my_handler.set_filter(filter)
 
