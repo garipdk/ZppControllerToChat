@@ -19,3 +19,6 @@ Si vous préférez exécuter le code il faut avoir python sur ton PC et exécute
 Je fais ça avec pyinstaller:
 
     pyinstaller --onefile .\src\main.py
+    
+# Ca bug chez moi !
+Hésitez pas à me contacter sur le discord de Zerator !
