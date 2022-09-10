@@ -11,6 +11,8 @@ Ch'ui un dev C# et c'est littéralement mon premier programme en python, donc c'
 # Comment l'exécuter ?
 Go récupérer l'exécutable ici : https://github.com/rh0r/ZppControllerToChat/releases
 
+Pour les utilisateurs de manettes DualSense, il faut passer par DS4Windows.
+
 Si vous préférez exécuter le code il faut avoir python sur ton PC et exécuter le fichier main.py comme ça:
 
     py .\src\main.py
