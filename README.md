@@ -21,4 +21,4 @@ Je fais ça avec pyinstaller:
     pyinstaller --onefile .\src\main.py
     
 # Ca bug chez moi !
-Hésitez pas à me contacter sur le discord de Zerator !
+Hésitez pas à me contacter (Rhor#7868) sur le discord de Zerator !
