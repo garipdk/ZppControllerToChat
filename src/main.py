@@ -65,10 +65,8 @@ class MyHandler(XInput.EventHandler):
                 output = word
 
             print(output)
-            for c in output:
-                self.press_key(c)
-
-            self.press_key(Key.enter)
+            
+            self.write_to_cursor(output)
 
             self.upper = not self.upper
 
@@ -77,13 +75,27 @@ class MyHandler(XInput.EventHandler):
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
             print(word)
-            for c in word:
-                self.press_key(c)
-            self.press_key(Key.enter)
+            self.write_to_cursor(word)
+
+    def write_to_cursor(self, word):
+        save_copied = pyperclip.paste()
+        pyperclip.copy(word)
+
+        self.press_combined_key(Key.ctrl, 'v')
+        self.press_key(Key.enter)
+
+        pyperclip.copy(save_copied)
 
     def press_key(self, character):
         self.keyboard.press(character)
         self.keyboard.release(character)
+    
+    def press_combined_key(self, character1, character2):
+        self.keyboard.press(character1)
+        self.keyboard.press(character2)
+        self.keyboard.release(character2)
+        self.keyboard.release(character1)
+
 
 print("ZppControllerToChat")
 
