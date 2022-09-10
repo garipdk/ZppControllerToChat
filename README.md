@@ -21,9 +21,6 @@ Et faites des dons pour la planète ! Go vous renseigner sur https://zevent.fr !
 
 (Les majuscules et les minusculees sont alternées pour éviter les spam du même message)
 
-# Il est moche ton code
-Ch'ui un dev C# et c'est littéralement mon premier programme en python, donc c'est normal si vous voyez des trucs pas ouf :-)
-
 # Comment l'exécuter ?
 Go récupérer l'exécutable ici : https://github.com/rh0r/ZppControllerToChat/releases
 
@@ -37,6 +34,9 @@ Si vous préférez exécuter le code il faut avoir python sur ton PC et exécute
 Je fais ça avec pyinstaller:
 
     pyinstaller --onefile .\src\main.py
-    
+  
+# Il est moche ton code
+Ch'ui un dev C# et c'est littéralement mon premier programme en python, donc c'est normal si vous voyez des trucs pas ouf :-)
+
 # Ca bug chez moi !
 Hésitez pas à me contacter (Rhor#7868) sur le discord de Zerator !

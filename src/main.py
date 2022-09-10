@@ -69,11 +69,13 @@ class MyHandler(XInput.EventHandler):
             self.write_to_cursor(output)
 
             self.upper = not self.upper
+
     def type_paste(self):
         now = time.time()
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
             print(pyperclip.paste())
+            self.press_combined_key(Key.ctrl, 'a')
             self.press_combined_key(Key.ctrl, 'v')
             self.press_key(Key.enter)
 
@@ -81,6 +83,7 @@ class MyHandler(XInput.EventHandler):
         save_copied = pyperclip.paste()
         pyperclip.copy(word)
 
+        self.press_combined_key(Key.ctrl, 'a')
         self.press_combined_key(Key.ctrl, 'v')
         self.press_key(Key.enter)
 
@@ -116,3 +119,4 @@ while(not my_handler.stop):
     continue
 
 print("Tchao")
+time.sleep(2)
