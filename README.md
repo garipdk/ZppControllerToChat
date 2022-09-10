@@ -6,15 +6,20 @@ Mettez votre curseur dans le chat du stream et lezgo ! Le programme entre votre 
 Et faites des dons pour la planète ! Go vous renseigner sur https://zevent.fr !
 
 # Utilisation
-Touche A : tape "A" ou "a" dans le chat puis entré
-Touche B : tape "B" ou "b" dans le chat puis entré
-Touche haut ou un joystick vers le haut : tape "HAUT" ou "haut" dans le chat puis entré
-Touche bas ou un joystick vers le bas : tape "BAS" ou "bas" dans le chat puis entré
-Touche gauche ou un joystick vers la gauche : tape "GAUCHE" ou "gauche" dans le chat puis entré
-Touche droite ou un joystick vers la droite : tape "DROITE" ou "droite" dans le chat puis entré
-Touche gachette droite du haut : colle ce qui a été copié puis entré
-Appuye sur le joystick gauche : quite l'application
-(Les majusculles et les minuscules sont alternés pour éviter les spam du même message)
+ - Touche A : tape "A" ou "a" dans le chat puis entrée
+ - Touche B : tape "B" ou "b" dans le chat puis entrée
+ - Touche haut ou un joystick vers le haut : tape "HAUT" ou "haut" dans
+   le chat puis entrée
+ - Touche bas ou un joystick vers le bas : tape "BAS" ou "bas" dans le
+   chat puis entrée
+ - Touche gauche ou un joystick vers la gauche : tape "GAUCHE" ou
+   "gauche" dans le chat puis entrée
+ - Touche droite ou un joystick vers la droite : tape "DROITE" ou
+   "droite" dans le chat puis entrée
+ - Touche gachette droite du haut : colle ce qui a été copié puis entrée
+ - Appuyer sur le joystick gauche : quitte l'application
+
+(Les majuscules et les minusculees sont alternées pour éviter les spam du même message)
 
 # Il est moche ton code
 Ch'ui un dev C# et c'est littéralement mon premier programme en python, donc c'est normal si vous voyez des trucs pas ouf :-)
