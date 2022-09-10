@@ -9,7 +9,7 @@ class MyHandler(XInput.EventHandler):
         self.upper = False
         self.stop = False
         self.keyboard = Controller()
-        self.last_keystroke = time.time()
+        self.last_keystroke = time.time() - 2.
 
     def process_button_event(self, event):
         if event.type == XInput.EVENT_BUTTON_PRESSED:
@@ -29,7 +29,7 @@ class MyHandler(XInput.EventHandler):
                 case XInput.BUTTON_START:
                     self.type_word("start")
                 case XInput.BUTTON_RIGHT_SHOULDER:
-                    self.type_paste(pyperclip.paste())
+                    self.type_paste()
                 case XInput.BUTTON_LEFT_THUMB:
                     self.stop = True
                 case _:
@@ -69,13 +69,13 @@ class MyHandler(XInput.EventHandler):
             self.write_to_cursor(output)
 
             self.upper = not self.upper
-
-    def type_paste(self, word):
+    def type_paste(self):
         now = time.time()
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
-            print(word)
-            self.write_to_cursor(word)
+            print(pyperclip.paste())
+            self.press_combined_key(Key.ctrl, 'v')
+            self.press_key(Key.enter)
 
     def write_to_cursor(self, word):
         save_copied = pyperclip.paste()
