@@ -1,4 +1,5 @@
 import XInput
+from XInput import get_state
 from pynput.keyboard import Key, Controller
 import time
 import pyperclip
@@ -8,6 +9,7 @@ a_char = ''
 copied_glob = pyperclip.paste()
 
 class MyHandler(XInput.EventHandler):
+
     def __init__(self, *controllers, filter=...):
         super().__init__(*controllers, filter=filter)
         self.upper = False
@@ -16,29 +18,29 @@ class MyHandler(XInput.EventHandler):
         self.last_keystroke = time.time() - 2.
         self.first_copy = self.last_keystroke
 
+    def is_button_press(self, button):
+        return bool(button & get_state(0).Gamepad.wButtons)
+
     def process_button_event(self, event):
         if event.type == XInput.EVENT_BUTTON_PRESSED:
-            match event.button_id:
-                case XInput.BUTTON_DPAD_UP:
-                    self.type_word("haut")
-                case XInput.BUTTON_DPAD_DOWN:
-                    self.type_word("bas")
-                case XInput.BUTTON_DPAD_LEFT:
-                    self.type_word("gauche")
-                case XInput.BUTTON_DPAD_RIGHT:
-                    self.type_word("droite")
-                case XInput.BUTTON_A:
-                    self.type_word("a")
-                case XInput.BUTTON_B:
-                    self.type_word("b")
-                case XInput.BUTTON_START:
-                    self.type_word("start")
-                case XInput.BUTTON_RIGHT_SHOULDER:
-                    self.type_paste()
-                case XInput.BUTTON_LEFT_THUMB:
-                    self.stop = True
-                case _:
-                    print(event)
+            while self.is_button_press(XInput.BUTTON_DPAD_UP):
+                self.type_word("haut")
+            while self.is_button_press(XInput.BUTTON_DPAD_DOWN):
+                self.type_word("bas")
+            while self.is_button_press(XInput.BUTTON_DPAD_LEFT):
+                self.type_word("gauche")
+            while self.is_button_press(XInput.BUTTON_DPAD_RIGHT):
+                self.type_word("droite")
+            while self.is_button_press(XInput.BUTTON_A):
+                self.type_word("a")
+            while self.is_button_press(XInput.BUTTON_B):
+                self.type_word("b")
+            while self.is_button_press(XInput.BUTTON_START):
+                self.type_word("start")
+            while self.is_button_press(XInput.BUTTON_RIGHT_SHOULDER):
+                self.type_paste()
+            while self.is_button_press(XInput.BUTTON_LEFT_THUMB):
+                self.stop = True
 
 
     def process_trigger_event(self, event):
@@ -93,6 +95,7 @@ class MyHandler(XInput.EventHandler):
                     else:
                         a_char = 'o'
             else:
+                print(copied + " ici")
                 self.first_copy = now
                 copied_glob = copied
                 pyperclip.copy(copied)
