@@ -94,7 +94,6 @@ class MyHandler(XInput.EventHandler):
                     else:
                         a_char = 'o'
             else:
-                print(copied + " ici")
                 self.first_copy = now
                 copied_glob = copied
                 pyperclip.copy(copied)
