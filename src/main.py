@@ -2,7 +2,6 @@ import XInput
 from pynput.keyboard import Key, Controller
 import time
 import pyperclip
-from randomwordfr import RandomWordFr
 
 a_char = ''
 copied_glob = pyperclip.paste()
