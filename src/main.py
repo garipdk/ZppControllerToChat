@@ -121,8 +121,10 @@ class MyHandler(XInput.EventHandler):
     def press_combined_key(self, character1, character2):
         self.keyboard.press(character1)
         self.keyboard.press(character2)
+        time.sleep(0.001)
         self.keyboard.release(character2)
         self.keyboard.release(character1)
+        time.sleep(0.001)
 
 
 print("ZppControllerToChat")
