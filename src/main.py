@@ -4,7 +4,7 @@ import time
 import pyperclip
 from randomwordfr import RandomWordFr
 
-a_char = 'O'
+a_char = 'o'
 
 
 class MyHandler(XInput.EventHandler):
@@ -86,13 +86,13 @@ class MyHandler(XInput.EventHandler):
                 if (now - self.first_copy) > 30:
                     self.first_copy = now
                     pyperclip.copy(self.copied)
-                    a_char = 'O'
+                    a_char = 'o'
                 else:
                     pyperclip.copy(copied + " " + a_char)
-                    if a_char == 'O':
-                        a_char = 'K'
+                    if a_char == 'o':
+                        a_char = 'k'
                     else:
-                        a_char = 'O'
+                        a_char = 'o'
             else:
                 self.first_copy = now
                 self.copied = copied
@@ -121,8 +121,10 @@ class MyHandler(XInput.EventHandler):
     def press_combined_key(self, character1, character2):
         self.keyboard.press(character1)
         self.keyboard.press(character2)
+        time.sleep(0.001)
         self.keyboard.release(character2)
         self.keyboard.release(character1)
+        time.sleep(0.001)
 
 
 print("ZppControllerToChat")
