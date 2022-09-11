@@ -2,6 +2,10 @@ import XInput
 from pynput.keyboard import Key, Controller
 import time
 import pyperclip
+from randomwordfr import RandomWordFr
+
+a_char = ''
+copied_glob = pyperclip.paste()
 
 class MyHandler(XInput.EventHandler):
     def __init__(self, *controllers, filter=...):
@@ -10,6 +14,7 @@ class MyHandler(XInput.EventHandler):
         self.stop = False
         self.keyboard = Controller()
         self.last_keystroke = time.time() - 2.
+        self.first_copy = self.last_keystroke
 
     def process_button_event(self, event):
         if event.type == XInput.EVENT_BUTTON_PRESSED:
@@ -71,9 +76,28 @@ class MyHandler(XInput.EventHandler):
             self.upper = not self.upper
 
     def type_paste(self):
+        global a_char, copied_glob
         now = time.time()
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
+            copied = pyperclip.paste()
+            if copied[:len(copied_glob)] == copied_glob:
+                if (now - self.first_copy) > 30:
+                    self.first_copy = now
+                    pyperclip.copy(copied_glob)
+                    a_char = 'o'
+                else:
+                    pyperclip.copy(copied + " " + a_char)
+                    if a_char == 'o':
+                        a_char = 'k'
+                    else:
+                        a_char = 'o'
+            else:
+                self.first_copy = now
+                copied_glob = copied
+                pyperclip.copy(copied)
+                a_char = 'o'
+
             print(pyperclip.paste())
             self.press_combined_key(Key.ctrl, 'a')
             self.press_combined_key(Key.ctrl, 'v')
