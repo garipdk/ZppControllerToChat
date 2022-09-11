@@ -3,7 +3,6 @@ from XInput import get_state
 from pynput.keyboard import Key, Controller
 import time
 import pyperclip
-from randomwordfr import RandomWordFr
 
 a_char = ''
 copied_glob = pyperclip.paste()
@@ -118,7 +117,9 @@ class MyHandler(XInput.EventHandler):
 
     def press_key(self, character):
         self.keyboard.press(character)
+        time.sleep(0.001)
         self.keyboard.release(character)
+        time.sleep(0.001)
     
     def press_combined_key(self, character1, character2):
         self.keyboard.press(character1)

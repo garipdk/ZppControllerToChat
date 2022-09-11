@@ -22,9 +22,9 @@ Et faites des dons pour la planète ! Go vous renseigner sur https://zevent.fr !
 (Les majuscules et les minusculees sont alternées pour éviter les spam du même message)
 
 # Comment l'exécuter ?
-Go récupérer l'exécutable ici : https://github.com/rh0r/ZppControllerToChat/releases
+Go récupérer l'exécutable ici : https://github.com/rh0r/ZppControllerToChat/releases/tag/v1.2.1
 
-Pour les utilisateurs de manettes DualSense, il faut passer par DS4Windows.
+Pour les utilisateurs de manettes DualShock, il faut passer par DS4Windows.
 
 Si vous préférez exécuter le code il faut avoir python sur ton PC et exécuter le fichier main.py comme ça:
 
