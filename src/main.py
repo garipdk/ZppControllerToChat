@@ -4,7 +4,7 @@ import time
 import pyperclip
 from randomwordfr import RandomWordFr
 
-a_char = 'o'
+a_char = ''
 
 
 class MyHandler(XInput.EventHandler):
@@ -12,10 +12,10 @@ class MyHandler(XInput.EventHandler):
         super().__init__(*controllers, filter=filter)
         self.upper = False
         self.stop = False
-        self.copied = pyperclip.paste()
+        self.copied = ""
         self.keyboard = Controller()
         self.last_keystroke = time.time() - 2.
-        self.first_copy = self.last_keystroke -29
+        self.first_copy = self.last_keystroke
 
     def process_button_event(self, event):
         if event.type == XInput.EVENT_BUTTON_PRESSED:
@@ -97,7 +97,7 @@ class MyHandler(XInput.EventHandler):
                 self.first_copy = now
                 self.copied = copied
                 pyperclip.copy(copied)
-                a_char = 'O'
+                a_char = 'o'
 
             print(pyperclip.paste())
             self.press_combined_key(Key.ctrl, 'a')
