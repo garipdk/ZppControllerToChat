@@ -5,14 +5,13 @@ import pyperclip
 from randomwordfr import RandomWordFr
 
 a_char = ''
-
+copied_glob = pyperclip.paste()
 
 class MyHandler(XInput.EventHandler):
     def __init__(self, *controllers, filter=...):
         super().__init__(*controllers, filter=filter)
         self.upper = False
         self.stop = False
-        self.copied = ""
         self.keyboard = Controller()
         self.last_keystroke = time.time() - 2.
         self.first_copy = self.last_keystroke
@@ -77,15 +76,15 @@ class MyHandler(XInput.EventHandler):
             self.upper = not self.upper
 
     def type_paste(self):
-        global a_char
+        global a_char, copied_glob
         now = time.time()
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
             copied = pyperclip.paste()
-            if copied[:len(self.copied)] == self.copied:
+            if copied[:len(copied_glob)] == copied_glob:
                 if (now - self.first_copy) > 30:
                     self.first_copy = now
-                    pyperclip.copy(self.copied)
+                    pyperclip.copy(copied_glob)
                     a_char = 'o'
                 else:
                     pyperclip.copy(copied + " " + a_char)
@@ -95,7 +94,7 @@ class MyHandler(XInput.EventHandler):
                         a_char = 'o'
             else:
                 self.first_copy = now
-                self.copied = copied
+                copied_glob = copied
                 pyperclip.copy(copied)
                 a_char = 'o'
 
