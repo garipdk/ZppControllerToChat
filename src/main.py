@@ -114,7 +114,9 @@ class MyHandler(XInput.EventHandler):
 
     def press_key(self, character):
         self.keyboard.press(character)
+        time.sleep(0.001)
         self.keyboard.release(character)
+        time.sleep(0.001)
     
     def press_combined_key(self, character1, character2):
         self.keyboard.press(character1)
