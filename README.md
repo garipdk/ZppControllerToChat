@@ -5,6 +5,8 @@ Mettez votre curseur dans le chat du stream et lezgo ! Le programme entre votre 
 
 Et faites des dons pour la planète ! Go vous renseigner sur https://zevent.fr !
 
+GG à tous pour les 10 182 126€ !!!
+
 # Utilisation
  - Touche A : tape "A" ou "a" dans le chat puis entrée
  - Touche B : tape "B" ou "b" dans le chat puis entrée
