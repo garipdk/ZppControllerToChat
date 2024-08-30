@@ -4,8 +4,9 @@ from pynput.keyboard import Key, Controller
 import time
 import pyperclip
 
-a_char = ''
+a_char = ""
 copied_glob = pyperclip.paste()
+
 
 class MyHandler(XInput.EventHandler):
 
@@ -14,7 +15,7 @@ class MyHandler(XInput.EventHandler):
         self.upper = False
         self.stop = False
         self.keyboard = Controller()
-        self.last_keystroke = time.time() - 2.
+        self.last_keystroke = time.time() - 2.0
         self.first_copy = self.last_keystroke
 
     def is_button_press(self, button):
@@ -40,7 +41,6 @@ class MyHandler(XInput.EventHandler):
                 self.type_paste()
             while self.is_button_press(XInput.BUTTON_LEFT_THUMB):
                 self.stop = True
-
 
     def process_trigger_event(self, event):
         return
@@ -71,7 +71,7 @@ class MyHandler(XInput.EventHandler):
                 output = word
 
             print(output)
-            
+
             self.write_to_cursor(output)
 
             self.upper = not self.upper
@@ -82,34 +82,34 @@ class MyHandler(XInput.EventHandler):
         if (now - self.last_keystroke) > 1.5:
             self.last_keystroke = now
             copied = pyperclip.paste()
-            if copied[:len(copied_glob)] == copied_glob:
+            if copied[: len(copied_glob)] == copied_glob:
                 if (now - self.first_copy) > 30:
                     self.first_copy = now
                     pyperclip.copy(copied_glob)
-                    a_char = 'o'
+                    a_char = "o"
                 else:
                     pyperclip.copy(copied + " " + a_char)
-                    if a_char == 'o':
-                        a_char = 'k'
+                    if a_char == "o":
+                        a_char = "k"
                     else:
-                        a_char = 'o'
+                        a_char = "o"
             else:
                 self.first_copy = now
                 copied_glob = copied
                 pyperclip.copy(copied)
-                a_char = 'o'
+                a_char = "o"
 
             print(pyperclip.paste())
-            self.press_combined_key(Key.ctrl, 'a')
-            self.press_combined_key(Key.ctrl, 'v')
+            self.press_combined_key(Key.ctrl, "a")
+            self.press_combined_key(Key.ctrl, "v")
             self.press_key(Key.enter)
 
     def write_to_cursor(self, word):
         save_copied = pyperclip.paste()
         pyperclip.copy(word)
 
-        self.press_combined_key(Key.ctrl, 'a')
-        self.press_combined_key(Key.ctrl, 'v')
+        self.press_combined_key(Key.ctrl, "a")
+        self.press_combined_key(Key.ctrl, "v")
         self.press_key(Key.enter)
 
         pyperclip.copy(save_copied)
@@ -119,7 +119,7 @@ class MyHandler(XInput.EventHandler):
         time.sleep(0.001)
         self.keyboard.release(character)
         time.sleep(0.001)
-    
+
     def press_combined_key(self, character1, character2):
         self.keyboard.press(character1)
         self.keyboard.press(character2)
@@ -136,7 +136,19 @@ if not XInput.get_connected()[0]:
     time.sleep(2)
     quit()
 
-filter = XInput.BUTTON_RIGHT_SHOULDER + XInput.STICK_LEFT + XInput.STICK_RIGHT + XInput.BUTTON_DPAD_UP + XInput.BUTTON_DPAD_DOWN + XInput.BUTTON_DPAD_RIGHT + XInput.BUTTON_DPAD_LEFT + XInput.BUTTON_A + XInput.BUTTON_B + XInput.BUTTON_START + XInput.BUTTON_LEFT_THUMB
+filter = (
+    XInput.BUTTON_RIGHT_SHOULDER
+    + XInput.STICK_LEFT
+    + XInput.STICK_RIGHT
+    + XInput.BUTTON_DPAD_UP
+    + XInput.BUTTON_DPAD_DOWN
+    + XInput.BUTTON_DPAD_RIGHT
+    + XInput.BUTTON_DPAD_LEFT
+    + XInput.BUTTON_A
+    + XInput.BUTTON_B
+    + XInput.BUTTON_START
+    + XInput.BUTTON_LEFT_THUMB
+)
 my_handler = MyHandler(0)
 my_handler.set_filter(filter)
 
@@ -144,7 +156,7 @@ print("Lezgo, pour sortir du programme, appuyez sur votre stick gauche.")
 
 my_gamepad_thread = XInput.GamepadThread(my_handler)
 
-while(not my_handler.stop):
+while not my_handler.stop:
     continue
 
 print("Tchao")
