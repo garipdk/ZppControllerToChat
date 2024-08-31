@@ -163,7 +163,7 @@ class ControllerOverlayApp:
 
             with open(self.file_path, "w", encoding="utf-8") as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
-                print("Données des deux chaines de spam sauvegardées :)")
+                print("Données sauvegardées :)")
                 
     def get_colour(self):
         col = colorchooser.askcolor(self.COLOUR_KEY)
@@ -721,7 +721,7 @@ def main():
                     g = int(data["G"])
                     b = int(data["B"])
                     COLOUR_KEY = (r, g, b)
-                    print("Données des deux chaines de spam récupérées :)")
+                    print("Données récupérées :)")
             except json.JSONDecodeError:
                 print("Error: File content is not valid JSON.")
 
