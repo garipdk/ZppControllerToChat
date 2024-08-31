@@ -41,13 +41,15 @@ class ControllerOverlayApp:
         trigger_deadzone: float = 0.002,
     ):
         self.first_string, self.second_string, self.idx, self.idx_tmp, self.COLOUR_KEY, self.COLOUR_KEY_tmp = first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp
+        if self.idx < 0 or self.idx > 1:
+            self.idx = 0
         self.file_path = file_path
         self.platform_map = {
             1: (gamepad_assets.Xbox1Assets, "xbox1"),
             0: (gamepad_assets.PS4Assets, "ps4"),
         }
-        self.asset_map = self.platform_map[0][0]()
-        gamepad_type = self.platform_map[0][1]
+        self.asset_map = self.platform_map[self.idx][0]()
+        gamepad_type = self.platform_map[self.idx][1]
         self.asset_map.load()
 
         self.running = False
@@ -700,7 +702,7 @@ def main():
     idx = 0
     
     # File path
-    file_path = ".zppControllerToChatV2Save.json"
+    file_path = "zppControllerToChatV2Save.json"
 
     # Step 1: Check if the file exists
     if os.path.exists(file_path):
