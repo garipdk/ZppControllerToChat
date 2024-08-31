@@ -300,6 +300,12 @@ class ControllerOverlayApp:
                 if joystick.get_button(1) == 1:
                     type_word("b")
 
+                if joystick.get_button(2) == 1:
+                    type_word("x")
+
+                if joystick.get_button(3) == 1:
+                    type_word("y")
+
                 if current_controller_type == "xbox1":
                     num_tmp = joystick.get_button(5)
                 else:
@@ -319,6 +325,15 @@ class ControllerOverlayApp:
 
                 if joystick.get_button(14) == 1:
                     type_word("gauche")
+
+                num_tmp = 0
+                if current_controller_type == "xbox1":
+                    num_tmp = joystick.get_button(7)
+                else:
+                    num_tmp = joystick.get_button(6)
+
+                if num_tmp == 1:
+                    type_word("start")
 
                 need_to_quit = 0
                 if current_controller_type == "xbox1":
@@ -691,7 +706,7 @@ def main():
     idx = 0
     
     # File path
-    file_path = ".zppControllerToChatV2Save.json"
+    file_path = "zppControllerToChatV2Save.json"
 
     # Step 1: Check if the file exists
     if os.path.exists(file_path):
