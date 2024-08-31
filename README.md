@@ -52,6 +52,10 @@ Je fais ça avec pyinstaller:
     pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2_withKeysXY.py .\src\assets.py --add-data .\src\main_assets:main_assets
     ou
     pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2_withoutKeysXY.py .\src\assets.py --add-data .\src\main_assets:main_assets
+    ou
+    pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2Light_withKeysXY.py
+    ou
+    pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2Light_withoutKeysXY.py
   
 # Il est moche ton code
 Ch'ui un dev C++ à la base mais c'est pas mon premier programme en python, donc j'espère que c'est pas si moche quant même ^^
@@ -61,5 +65,5 @@ Hésite pas à me contacter (GapirAte) sur le discord de Zerator !
 
 # Comment je fais pour que windows ne détecte pas les exe comme des virus ?
 Je créé un ticket par exe dans ce scanner de windows : https://www.microsoft.com/en-us/wdsi/filesubmission
-Mais ça peut prendre 6h pour que le scanner décrète que ce n'est pas un virus
+Mais ça peut prendre 6h en version légère et plus de 10h en version lourde pour que le scanner décrète que ce n'est pas un virus
 Il est possible d'acheter une acréditation pour que ça aille plus vite mais pour l'instant flemme
