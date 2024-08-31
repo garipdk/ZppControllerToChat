@@ -7,6 +7,7 @@ import time
 from time import sleep
 import sys
 import json
+from pathlib import Path
 
 oldDir = os.getcwd()
 abspath = os.path.abspath(__file__)
@@ -45,8 +46,8 @@ class ControllerOverlayApp:
             self.idx = 0
         self.file_path = file_path
         self.platform_map = {
-            1: (gamepad_assets.Xbox1Assets, "xbox1"),
             0: (gamepad_assets.PS4Assets, "ps4"),
+            1: (gamepad_assets.Xbox1Assets, "xbox1"),
         }
         self.asset_map = self.platform_map[self.idx][0]()
         gamepad_type = self.platform_map[self.idx][1]
@@ -122,7 +123,7 @@ class ControllerOverlayApp:
 
         self.colorButton = Button(scaled_x, scaled_y + 4 * scaled_height + int(140 * self.scaling_factor), scaled_width, scaled_height, font, "Couleur de font", self.get_colour)
 
-        self.controller_dropdown = Dropdown(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, supported_gps, font, self.on_button_click)
+        self.controller_dropdown = Dropdown(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, supported_gps, font, self.on_button_click, self.idx)
     def on_button_click(self, idx0 = -1):
         if (
                 (self.line_edit1.get_value() != self.line_edit2.get_value() and
@@ -701,6 +702,7 @@ def press_combined_key(character1, character2):
 
 
 def main():
+    global dname
     COLOUR_KEY = (150, 150, 150)  # gray
 
     first_string = "o"
@@ -708,7 +710,7 @@ def main():
     idx = 0
     
     # File path
-    file_path = "zppControllerToChatV2Save.json"
+    file_path = os.path.join(str(Path.home()), "zppControllerToChatV2Save.json")
 
     # Step 1: Check if the file exists
     if os.path.exists(file_path):

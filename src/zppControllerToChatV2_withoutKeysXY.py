@@ -7,6 +7,7 @@ import time
 from time import sleep
 import sys
 import json
+from pathlib import Path
 
 oldDir = os.getcwd()
 abspath = os.path.abspath(__file__)
@@ -702,7 +703,7 @@ def main():
     idx = 0
     
     # File path
-    file_path = "zppControllerToChatV2Save.json"
+    file_path = os.path.join(str(Path.home()), "zppControllerToChatV2Save.json")
 
     # Step 1: Check if the file exists
     if os.path.exists(file_path):
