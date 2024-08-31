@@ -36,20 +36,22 @@ Normalement avec ça license il devrait pas y avoir de soucis mais si il y en a 
 # Comment l'exécuter ?
 Go récupérer l'exécutable ici : https://github.com/garipdk/ZppControllerToChat/releases
 
-Si tu préfére exécuter le code toi même exécute le fichier zppControllerToChatV2.py en ligne de commande avec la version embaded de python qui a déjà toutes les dépendances comme ça :
+Si tu préfére exécuter le code toi même exécute il faut avoir python avec toutes les dépendances installées sur ton PC et exécuter le fichier zppControllerToChatV2_withKeysXY.py comme ça:
 
-    .\python-3.10.0-embed-amd64\python.exe .\src\zppControllerToChatV2.py
-
-Ou si tu veux il faut avoir python avec toutes les dépendances installées sur ton PC et exécuter le fichier zppControllerToChatV2.py comme ça:
-
-    py .\src\zppControllerToChatV2.py
+    py .\src\zppControllerToChatV2_withKeysXY.py
     ou
-    python3 .\src\zppControllerToChatV2.py
+    python3 .\src\zppControllerToChatV2_withKeysXY.py
+    ou
+    py .\src\zppControllerToChatV2_withoutKeysXY.py
+    ou
+    python3 .\src\zppControllerToChatV2_withoutKeysXY.py
 
 # Et pour faire un exécutable ?
 Je fais ça avec pyinstaller:
 
-    pyinstaller  --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2.py
+    pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2_withKeysXY.py .\src\assets.py --add-data .\src\main_assets:main_assets
+    ou
+    pyinstaller --icon=JJJJJ.ico --onefile .\src\zppControllerToChatV2_withoutKeysXY.py .\src\assets.py --add-data .\src\main_assets:main_assets
   
 # Il est moche ton code
 Ch'ui un dev C++ à la base mais c'est pas mon premier programme en python, donc j'espère que c'est pas si moche quant même ^^
