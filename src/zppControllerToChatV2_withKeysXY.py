@@ -218,7 +218,7 @@ class ControllerOverlayApp:
                 self.validateButton.resize(scaled_x, scaled_y + 3 * scaled_height + int(100 * self.scaling_factor), scaled_width, scaled_height)
 
                 self.colorButton.resize(scaled_x, scaled_y + 4 * scaled_height + int(140 * self.scaling_factor), scaled_width, scaled_height)
-                self.controller_dropdown.resize(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height)
+                self.controller_dropdown.resize(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, self.idx)
 
         
     def run(self):

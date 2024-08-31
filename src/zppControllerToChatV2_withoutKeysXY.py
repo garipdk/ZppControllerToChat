@@ -122,7 +122,7 @@ class ControllerOverlayApp:
 
         self.colorButton = Button(scaled_x, scaled_y + 4 * scaled_height + int(140 * self.scaling_factor), scaled_width, scaled_height, font, "Couleur de font", self.get_colour)
 
-        self.controller_dropdown = Dropdown(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, supported_gps, font, self.on_button_click)
+        self.controller_dropdown = Dropdown(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, supported_gps, font, self.on_button_click, self.idx)
     def on_button_click(self, idx0 = -1):
         if (
                 (self.line_edit1.get_value() != self.line_edit2.get_value() and
