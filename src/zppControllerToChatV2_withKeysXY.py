@@ -56,8 +56,10 @@ class ControllerOverlayApp:
         self.running = False
         self.window_is_framed = True
         self.trigger_deadzone = trigger_deadzone
-
-        size = self.asset_map._base.get_size()
+        
+        sizeX = pygame.image.load(str(Path(__file__).parent / "main_assets" / "ps4" / "pngs" / "controller_base.png")).get_size()
+        sizeY = pygame.image.load(str(Path(__file__).parent / "main_assets" / "xbox1" / "pngs" / "controller_base.png")).get_size()
+        size = (sizeX[0], sizeY[1])
         self.window_size = (size[0] + 300, size[1] + 10)
         
         pygame.init()
@@ -78,52 +80,32 @@ class ControllerOverlayApp:
         self.BUTTON_TRANSLATION = gamepad_assets.ButtonTranslator(gamepad_type.lower())
 
         # Create an initial window (this will be resized)
-        pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+        pygame.display.set_mode(self.window_size, pygame.RESIZABLE | pygame.SCALED)
         pygame.display.set_caption("Manette Zpp")
-
-        # Get the monitor info where the Pygame window is currently located
-        self.current_monitor = get_current_monitor_info()
-        self.dpi = calculate_dpi_for_monitor(self.current_monitor)
-        if self.dpi is None:
-            print("Could not calculate DPI for the current monitor. Using default DPI (96).")
-            self.dpi = 96
-
-        # Use the calculated DPI to determine the scaling factor
-        self.base_dpi = 96  # Assume a base DPI of 96
-        self.scaling_factor = self.dpi / self.base_dpi
-
-        self.scaled_window_size = (int(self.window_size[0] * self.scaling_factor),
-                            int(self.window_size[1] * self.scaling_factor))
         
-        pygame.display.set_mode(self.scaled_window_size, pygame.RESIZABLE)
         self.screen = pygame.display.get_surface()
         # Define base sizes and positions for UI elements
         base_width, base_height = 200, 40
         base_x, base_y = size[0] + 20, 5
-
-        # Scale sizes and positions according to DPI
-        scaled_width = int(base_width * self.scaling_factor)
-        scaled_width0 = int(280 * self.scaling_factor)
-        scaled_height = int(base_height * self.scaling_factor)
-        scaled_x = int(base_x * self.scaling_factor)
-        scaled_y = int(base_y * self.scaling_factor)
+        base_width0 = 280
 
         # Font setup
-        font = pygame.font.Font(None, int(22 * self.scaling_factor))
-        font0 = pygame.font.Font(None, int(20 * self.scaling_factor))
+        font = pygame.font.Font(None, int(22))
+        font0 = pygame.font.Font(None, int(20))
 
             
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One")
-        self.line_edit0 = LineEdit(scaled_x, scaled_y, scaled_width0, scaled_height, font0, "Les deux phrases de spam qui alternent :")
-        self.line_edit1 = LineEdit(scaled_x, scaled_y + scaled_height + int(20 * self.scaling_factor), scaled_width, scaled_height, font, self.first_string)
-        self.line_edit2 = LineEdit(scaled_x, scaled_y + 2 * scaled_height + int(60 * self.scaling_factor), scaled_width, scaled_height, font, self.second_string)
+        self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :")
+        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(20), base_width, base_height, font, self.first_string)
+        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(60), base_width, base_height, font, self.second_string)
 
-        self.validateButton = Button(scaled_x, scaled_y + 3 * scaled_height + int(100 * self.scaling_factor), scaled_width, scaled_height, font, "Valider", self.on_button_click)
+        self.validateButton = Button(base_x, base_y + 3 * base_height + int(100), base_width, base_height, font, "Valider", self.on_button_click)
 
-        self.colorButton = Button(scaled_x, scaled_y + 4 * scaled_height + int(140 * self.scaling_factor), scaled_width, scaled_height, font, "Couleur de font", self.get_colour)
+        self.colorButton = Button(base_x, base_y + 4 * base_height + int(140), base_width, base_height, font, "Couleur de font", self.get_colour)
 
-        self.controller_dropdown = Dropdown(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, supported_gps, font, self.on_button_click, self.idx)
+        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(160), base_width, base_height, supported_gps, font, self.on_button_click, self.idx)
+    
     def on_button_click(self, idx0 = -1):
         if (
                 (self.line_edit1.get_value() != self.line_edit2.get_value() and
@@ -171,62 +153,10 @@ class ControllerOverlayApp:
         if col[0] != None and col[0] != self.COLOUR_KEY:
             self.COLOUR_KEY = col[0]
             self.on_button_click()
-
-    def resize(self):
-        
-        # Get the monitor info where the Pygame window is currently located
-        monitor = get_current_monitor_info()
-        if monitor != None and self.current_monitor != monitor:
-            self.current_monitor = monitor
-            dpi0 = calculate_dpi_for_monitor(self.current_monitor)
-            if dpi0 is None:
-                print("Could not calculate DPI for the current monitor. Using default DPI (96).")
-                dpi0 = 96
-            if dpi != dpi0:
-                self.dpi = dpi0
-                # Use the calculated DPI to determine the scaling factor
-                self.base_dpi = 96  # Assume a base DPI of 96
-                self.scaling_factor = self.dpi / self.base_dpi
-
-                size = self.asset_map._base.get_size()
-                self.window_size = (size[0] + 300, size[1] + 10)
-        
-                self.scaled_window_size = (int(self.window_size[0] * self.scaling_factor),
-                                    int(self.window_size[1] * self.scaling_factor))
-                
-                pygame.display.set_mode(self.scaled_window_size, pygame.RESIZABLE)
-                self.screen = pygame.display.get_surface()
-                # Define base sizes and positions for UI elements
-                base_width, base_height = 200, 40
-                base_x, base_y = size[0] + 15, 5
-
-                # Scale sizes and positions according to DPI
-                scaled_width = int(base_width * self.scaling_factor)
-                scaled_width0 = int(280 * self.scaling_factor)
-                scaled_height = int(base_height * self.scaling_factor)
-                scaled_x = int(base_x * self.scaling_factor)
-                scaled_y = int(base_y * self.scaling_factor)
-
-                # Font setup
-                font = pygame.font.Font(None, int(22 * self.scaling_factor))
-                font0 = pygame.font.Font(None, int(22 * self.scaling_factor))
-
-                # resize UI elements
-                self.line_edit0.resize(scaled_x, scaled_y, scaled_width0, scaled_height)
-                self.line_edit1.resize(scaled_x, scaled_y + scaled_height + int(20 * self.scaling_factor), scaled_width, scaled_height)
-                self.line_edit2.resize(scaled_x, scaled_y + 2 * scaled_height + int(60 * self.scaling_factor), scaled_width, scaled_height)
-
-                self.validateButton.resize(scaled_x, scaled_y + 3 * scaled_height + int(100 * self.scaling_factor), scaled_width, scaled_height)
-
-                self.colorButton.resize(scaled_x, scaled_y + 4 * scaled_height + int(140 * self.scaling_factor), scaled_width, scaled_height)
-                self.controller_dropdown.resize(scaled_x, scaled_y + 5 * scaled_height + int(160 * self.scaling_factor), scaled_width, scaled_height, self.idx)
-
-        
     def run(self):
         joysticks = {}
         self.running = True 
         while self.running:
-            self.resize()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -237,11 +167,11 @@ class ControllerOverlayApp:
                     ):  # right click to make frame available, so we can move the window around easily
                         if not self.window_is_framed:
                             self.window_is_framed = True
-                            self.screen = pygame.display.set_mode(self.scaled_window_size)
+                            self.screen = pygame.display.set_mode(self.window_size, pygame.RESIZABLE | pygame.SCALED)
                         else:
                             self.window_is_framed = False
                             self.screen = pygame.display.set_mode(
-                                self.scaled_window_size, pygame.NOFRAME
+                                self.window_size, pygame.RESIZABLE | pygame.SCALED | pygame.NOFRAME
                             )
 
                 if event.type == pygame.JOYDEVICEADDED:
@@ -257,6 +187,7 @@ class ControllerOverlayApp:
                         f"Manette {joysticks[event.instance_id].get_name()} {event.instance_id} déconnecté"
                     )
                     del joysticks[event.instance_id]
+                
                 self.controller_dropdown.handle_event(event)
                 self.line_edit1.handle_event(event)
                 self.line_edit2.handle_event(event)
@@ -405,13 +336,13 @@ class ControllerOverlayApp:
                     elif button_ID not in self.asset_map.analogs:
                         try:
                             btndat = self.asset_map[button_ID][button_is_pressed]
-                            self.screen.blit(btndat["img"], btndat["loc"])
+                            self.screen.blit(btndat["img"],btndat["loc"])
                         except (KeyError, TypeError):
                             continue
-
-                dpad_state = joystick.get_hat(0)
-                for im, loc in self.asset_map[dpad_state]:
-                    self.screen.blit(im, loc)
+                for i in range(joystick.get_numhats()):
+                    dpad_state = joystick.get_hat(i)
+                    for im, loc in self.asset_map[dpad_state]:
+                        self.screen.blit(im, loc)
 
                 # Analog Stick movement
                 left_ana_horiz, left_ana_verti = round(
@@ -458,7 +389,7 @@ class ControllerOverlayApp:
                     if max(0, (joystick.get_axis(4) + 1) / 2) > self.trigger_deadzone:
                         self.screen.blit(lt['img'], lt['loc'])
                     if max(0, (joystick.get_axis(5) + 1) / 2) > self.trigger_deadzone:
-                        self.screen.blit(rt['img'], rt['loc'])
+                       self.screen.blit(rt['img'], rt['loc'])
                 pygame.display.update()
 
 
@@ -472,12 +403,6 @@ class Dropdown:
         self.active = False
         self.hovered = False
         self.callback = callback
-
-    def resize(self, x, y, w, h):
-        self.rect.x = x
-        self.rect.y = y
-        self.rect.width = w
-        self.rect.height = h
 
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
@@ -533,12 +458,6 @@ class LineEdit:
         self.text = text
         self.active = False
         self.color = GRAY
-
-    def resize(self, x, y, w, h):
-        self.rect.x = x
-        self.rect.y = y
-        self.rect.width = w
-        self.rect.height = h
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
@@ -575,12 +494,6 @@ class Button:
         self.callback = callback
         self.color = GRAY
         self.hovered = False
-        
-    def resize(self, x, y, w, h):
-        self.rect.x = x
-        self.rect.y = y
-        self.rect.width = w
-        self.rect.height = h
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
