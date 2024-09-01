@@ -17,7 +17,6 @@ os.chdir(dname)
 import assets as gamepad_assets
 
 from tkinter import colorchooser
-from screeninfo import get_monitors
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
