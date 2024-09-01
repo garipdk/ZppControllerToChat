@@ -38,7 +38,7 @@ first_copy = last_keystroke
 class ControllerOverlayApp:
 
     def __init__(
-        self, first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path,
+        self, first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp,
         trigger_deadzone: float = 0.002,
     ):
         self.first_string, self.second_string, self.idx, self.idx_tmp, self.COLOUR_KEY, self.COLOUR_KEY_tmp = first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp
@@ -62,6 +62,9 @@ class ControllerOverlayApp:
         size = (sizeX[0], sizeY[1])
         self.window_size = (size[0] + 300, size[1] + 10)
         
+        self.delais = delais
+        self.delais_tmp = delais_tmp
+
         pygame.init()
         pygame.joystick.init()
         num_controllers = pygame.joystick.get_count()
@@ -98,15 +101,38 @@ class ControllerOverlayApp:
         supported_gps = ("PlayStation 4", "Xbox One")
         self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :")
         self.line_edit1 = LineEdit(base_x, base_y + base_height + int(20), base_width, base_height, font, self.first_string)
-        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(60), base_width, base_height, font, self.second_string)
+        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(40), base_width, base_height, font, self.second_string)
 
-        self.validateButton = Button(base_x, base_y + 3 * base_height + int(100), base_width, base_height, font, "Valider", self.on_button_click)
+        self.validateButton = Button(base_x, base_y + 3 * base_height + int(60), base_width, base_height, font, "Valider", self.save_to_json)
 
-        self.colorButton = Button(base_x, base_y + 4 * base_height + int(140), base_width, base_height, font, "Couleur de font", self.get_colour)
+        self.colorButton = Button(base_x, base_y + 4 * base_height + int(80), base_width, base_height, font, "Couleur de font", self.get_colour)
 
-        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(160), base_width, base_height, supported_gps, font, self.on_button_click, self.idx)
+        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(100), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
     
-    def on_button_click(self, idx0 = -1):
+        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(140), base_width, base_height, font, "Delais")
+        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(150), 50, base_height, font, f"{self.delais:.2f} s")
+        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(150), 45, base_height, font, "+", self.add_delais)
+        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(150), 45, base_height, font, "-", self.sub_delais)
+
+    def add_delais(self):
+        # recupper le bouton radio pour savoir quoi ajouter
+        new_delais = self.delais + 0.5
+
+        self.update_and_save_delais(new_delais)
+
+    def sub_delais(self):
+        new_delais = self.delais - 0.5
+        new_delais = max(0, new_delais)
+        # recupper le bouton radio pour savoir quoi ajouter
+        self.update_and_save_delais(new_delais)
+
+    def update_and_save_delais(self, new_delais: float):
+        self.delais = new_delais
+        self.line_edit3.set_value(f"{new_delais:.2f} s")
+        self.save_to_json()
+
+
+    def save_to_json(self, idx0 = -1):
         if (
                 (self.line_edit1.get_value() != self.line_edit2.get_value() and
                 (self.line_edit1.get_value() != self.first_string or
@@ -116,7 +142,8 @@ class ControllerOverlayApp:
                 )
                 or
                 idx0 not in [-1, self.idx] or self.COLOUR_KEY_tmp[0] != self.COLOUR_KEY[0] or
-                self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2]
+                self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2] or
+                self.delais_tmp != self.delais
             ):
             if idx0 not in [-1, self.idx]:
                 self.idx = idx0
@@ -135,6 +162,8 @@ class ControllerOverlayApp:
             if (self.COLOUR_KEY_tmp[0] != self.COLOUR_KEY[0] or
                 self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2]):
                 self.COLOUR_KEY_tmp = self.COLOUR_KEY
+            if self.delais_tmp != self.delais:
+                self.delais_tmp = self.delais
             data = {
                 "first_string": self.first_string,
                 "second_string": self.second_string,
@@ -142,6 +171,7 @@ class ControllerOverlayApp:
                 "R": self.COLOUR_KEY[0],
                 "G": self.COLOUR_KEY[1],
                 "B": self.COLOUR_KEY[2],
+                "delais" : self.delais,
             }
 
             with open(self.file_path, "w", encoding="utf-8") as file:
@@ -152,7 +182,7 @@ class ControllerOverlayApp:
         col = colorchooser.askcolor(self.COLOUR_KEY)
         if col[0] != None and col[0] != self.COLOUR_KEY:
             self.COLOUR_KEY = col[0]
-            self.on_button_click()
+            self.save_to_json()
     def run(self):
         joysticks = {}
         self.running = True 
@@ -191,6 +221,8 @@ class ControllerOverlayApp:
                 self.controller_dropdown.handle_event(event)
                 self.line_edit1.handle_event(event)
                 self.line_edit2.handle_event(event)
+                self.btn_sub.handle_event(event)
+                self.btn_add.handle_event(event)
                 if(self.line_edit1.get_value() != self.line_edit2.get_value() and
                     (self.line_edit1.get_value() != self.first_string or
                     self.line_edit2.get_value() != self.second_string) and
@@ -204,10 +236,15 @@ class ControllerOverlayApp:
             self.screen.fill(self.COLOUR_KEY)
             self.screen.blit(self.asset_map._base, (5, 5))
 
-            self.controller_dropdown.draw(self.screen)
             self.line_edit0.draw(self.screen)
             self.line_edit1.draw(self.screen)
             self.line_edit2.draw(self.screen)
+            self.line_edit4.draw(self.screen)
+            self.line_edit3.draw(self.screen)
+            self.btn_sub.draw(self.screen)
+            self.btn_add.draw(self.screen)
+            self.controller_dropdown.draw(self.screen)
+
             if(self.line_edit1.get_value() != self.line_edit2.get_value() and
                 (self.line_edit1.get_value() != self.first_string or
                 self.line_edit2.get_value() != self.second_string) and
@@ -229,10 +266,10 @@ class ControllerOverlayApp:
                     current_controller_type = "ps4"
                 num_tmp = 0
                 if joystick.get_button(0) == 1:
-                    type_word("a")
+                    type_word("a", self.delais)
 
                 if joystick.get_button(1) == 1:
-                    type_word("b")
+                    type_word("b", self.delais)
 
                 if current_controller_type == "xbox1":
                     num_tmp = joystick.get_button(5)
@@ -240,19 +277,19 @@ class ControllerOverlayApp:
                     num_tmp = joystick.get_button(10)
 
                 if num_tmp == 1:
-                    type_paste(self.first_string, self.second_string)
+                    type_paste(self.first_string, self.second_string, self.delais)
 
                 if joystick.get_button(11) == 1:
-                    type_word("haut")
+                    type_word("haut", self.delais)
 
                 if joystick.get_button(12) == 1:
-                    type_word("bas")
+                    type_word("bas", self.delais)
 
                 if joystick.get_button(13) == 1:
-                    type_word("droite")
+                    type_word("droite", self.delais)
 
                 if joystick.get_button(14) == 1:
-                    type_word("gauche")
+                    type_word("gauche", self.delais)
 
                 num_tmp = 0
                 if current_controller_type == "xbox1":
@@ -261,7 +298,7 @@ class ControllerOverlayApp:
                     num_tmp = joystick.get_button(6)
 
                 if num_tmp == 1:
-                    type_word("start")
+                    type_word("start", self.delais)
 
                 need_to_quit = 0
                 if current_controller_type == "xbox1":
@@ -277,16 +314,16 @@ class ControllerOverlayApp:
                     hat = joystick.get_hat(hat_num)
 
                     if hat[1] == 1:
-                        type_word("haut")
+                        type_word("haut", self.delais)
 
                     if hat[1] == -1:
-                        type_word("bas")
+                        type_word("bas", self.delais)
 
                     if hat[0] == 1:
-                        type_word("droite")
+                        type_word("droite", self.delais)
 
                     if hat[0] == -1:
-                        type_word("gauche")
+                        type_word("gauche", self.delais)
 
                 axes = joystick.get_numaxes()
 
@@ -294,25 +331,25 @@ class ControllerOverlayApp:
                     x = joystick.get_axis(0)
                     y = joystick.get_axis(1)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
-                        type_word("bas")
+                        type_word("bas", self.delais)
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
-                        type_word("haut")
+                        type_word("haut", self.delais)
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
-                        type_word("gauche")
+                        type_word("gauche", self.delais)
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
-                        type_word("droite")
+                        type_word("droite", self.delais)
 
                 if axes >= 4:
                     x = joystick.get_axis(2)
                     y = joystick.get_axis(3)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
-                        type_word("bas")
+                        type_word("bas", self.delais)
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
-                        type_word("haut")
+                        type_word("haut", self.delais)
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
-                        type_word("gauche")
+                        type_word("gauche", self.delais)
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
-                        type_word("droite")
+                        type_word("droite", self.delais)
                 
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
@@ -477,6 +514,9 @@ class LineEdit:
     def get_value(self):
         return self.text
 
+    def set_value(self, text : str):
+        self.text = text
+
 
 # Class for the Button widget
 class Button:
@@ -510,39 +550,12 @@ class Button:
             self.hovered = self.rect.collidepoint(event.pos)
 
 
-# Function to get current monitor info
-def get_current_monitor_info():
-    window_pos = pygame.display.get_window_position()
-    monitors = get_monitors()
-    for monitor in monitors:
-        if (
-            monitor.x <= window_pos[0] < monitor.x + monitor.width
-            and monitor.y <= window_pos[1] < monitor.y + monitor.height
-        ):
-            return monitor
-    return None
-
-
-# Function to calculate DPI for the current monitor
-def calculate_dpi_for_monitor(monitor):
-    if monitor != None and monitor.width_mm != None and monitor.height_mm != None and monitor.width != None and monitor.height != None:
-        if monitor.width_mm > 0 and monitor.height_mm > 0 and monitor.width > 0 and monitor.height > 0:
-            width_in_inches = monitor.width_mm / 25.4
-            height_in_inches = monitor.height_mm / 25.4
-            if width_in_inches > 0 and height_in_inches > 0:
-                dpi_x = monitor.width / width_in_inches
-                dpi_y = monitor.height / height_in_inches
-                dpi = (dpi_x + dpi_y) / 2
-                return dpi
-    return None
-
-
-def type_word(word):
+def type_word(word, delais: float):
     global last_keystroke, upper
 
     now = time.time()
 
-    if (now - last_keystroke) > 1.5:
+    if (now - last_keystroke) > delais:
         last_keystroke = now
         output = ""
         if upper:
@@ -557,10 +570,10 @@ def type_word(word):
         upper = not upper
 
 
-def type_paste(first_string, second_string):
+def type_paste(first_string, second_string, delais: float):
     global a_string, copied_glob, last_keystroke, first_copy
     now = time.time()
-    if (now - last_keystroke) > 1.5:
+    if (now - last_keystroke) > delais:
         last_keystroke = now
         copied = pyperclip.paste()
         if copied[: len(copied_glob)] == copied_glob:
@@ -615,6 +628,7 @@ def main():
     first_string = "o"
     second_string = "k"
     idx = 0
+    delais = 1.5
     
     # File path
     file_path = os.path.join(str(Path.home()), "zppControllerToChatV2Save.json")
@@ -627,7 +641,8 @@ def main():
                 data = json.load(file)
                 if (
                     "first_string" in data and "second_string" in data and
-                    "idx" in data and "R" in data and "G" in data and "B" in data
+                    "idx" in data and "R" in data and "G" in data and "B" in data and
+                    "delais" in data
                     ):
                     first_string = str(data["first_string"])
                     second_string = str(data["second_string"])
@@ -636,14 +651,16 @@ def main():
                     g = int(data["G"])
                     b = int(data["B"])
                     COLOUR_KEY = (r, g, b)
+                    delais = float(data["delais"])
                     print("Données récupérées :)")
             except json.JSONDecodeError:
                 print("Error: File content is not valid JSON.")
 
     idx_tmp = idx
     COLOUR_KEY_tmp = COLOUR_KEY
+    delais_tmp = delais
 
-    app = ControllerOverlayApp(first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path)
+    app = ControllerOverlayApp(first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp)
     app.run()
     pygame.quit()
             
