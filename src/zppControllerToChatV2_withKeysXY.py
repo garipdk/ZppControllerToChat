@@ -114,6 +114,8 @@ class ControllerOverlayApp:
         self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(150), 45, base_height, font, "+", self.add_delais)
         self.btn_sub = Button(base_x, base_y + 7 * base_height + int(150), 45, base_height, font, "-", self.sub_delais)
 
+        self.checkbox = CheckBox(base_x, base_y + 8 * base_height + int(170), 20, 20, font, "CheckBox")
+
     def add_delais(self):
         # recupper le bouton radio pour savoir quoi ajouter
         new_delais = self.delais + 0.5
@@ -223,6 +225,7 @@ class ControllerOverlayApp:
                 self.line_edit2.handle_event(event)
                 self.btn_sub.handle_event(event)
                 self.btn_add.handle_event(event)
+                self.checkbox.handle_event(event)
                 if(self.line_edit1.get_value() != self.line_edit2.get_value() and
                     (self.line_edit1.get_value() != self.first_string or
                     self.line_edit2.get_value() != self.second_string) and
@@ -243,6 +246,7 @@ class ControllerOverlayApp:
             self.line_edit3.draw(self.screen)
             self.btn_sub.draw(self.screen)
             self.btn_add.draw(self.screen)
+            self.checkbox.draw(self.screen)
             self.controller_dropdown.draw(self.screen)
 
             if(self.line_edit1.get_value() != self.line_edit2.get_value() and
@@ -555,6 +559,64 @@ class Button:
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
 
+
+class CheckBox:
+
+    def __init__(self, x, y, w, h, font=None, text=None):
+        global  GRAY
+        self.rect = pygame.Rect(x, y, w, h)
+        self.active = False
+        self.color = GRAY
+        self.checked = False
+        self.font = font
+        self.text = text
+        
+    def draw(self, screen):
+        global BLACK
+
+        # SECTION CheckBox
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
+        if self.checked:
+            ### Pour faire zolie en faisant dépasser l'icone
+
+            offset = 0.2
+            check_mark_offset = (self.rect.width * offset, self.rect.height * offset)
+            check_icon_size = (self.rect.width + check_mark_offset[0], self.rect.height + check_mark_offset[1])
+            icon = pygame.image.load(str(Path(__file__).parent / "main_assets" / "check-mark-icon.png"))
+            check_icon = pygame.transform.scale(icon, check_icon_size)
+            check_icon_position = ( self.rect.x - check_mark_offset[0] / 2, self.rect.y - check_mark_offset[1])
+
+            ### Sinon
+            # check_icon = pygame.transform.scale(pygame.image.load(str("check-mark-icon.png")), (self.rect.width , self.rect.height))
+            # check_icon_position = ( self.rect.x, self.rect.y)
+            ###
+            
+            screen.blit(check_icon, check_icon_position)
+
+        # SECTION Label
+        if self.font and self.text:
+            text_surface = self.font.render(self.text, True, BLACK)
+            screen.blit(text_surface, (self.rect.x + self.rect.width + 5, self.rect.y + (self.rect.height / 2) - (text_surface.get_height() / 2) + 2 ))
+
+
+    def handle_event(self, event):
+        global  GRAY, BLUE
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.checked = not self.checked
+
+        if event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                self.active = True
+                self.color = BLUE
+            else:
+                self.active = False
+                self.color = GRAY
+
+    def get_checked(self):
+        return self.checked
 
 def type_word(word, delais: float):
     global last_keystroke, upper
