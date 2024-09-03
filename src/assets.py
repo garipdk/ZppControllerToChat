@@ -282,111 +282,111 @@ class SwitchAssets:
 
     def load(self):
         self._base = load_image(self._files / "controller_base.png")
-        self.left_trigger = {'img': load_image(self._files / 'left_trigger_pressed.png'), 'loc': (113, 5)}
-        self.right_trigger = {'img': load_image(self._files / 'right_trigger_pressed.png'), 'loc': (602, 5)}
+        self.left_trigger = {'img': load_image(self._files / 'left_trigger_pressed.png'), 'loc': (112 + 5, 6+5)}
+        self.right_trigger = {'img': load_image(self._files / 'right_trigger_pressed.png'), 'loc': (518 + 5, 6+5)}
         bumper = load_image(self._files / "bumper_pressed.png")
-        joystick_up = load_image(self._files / "stick_released.png")
-        joystick_down = load_image(self._files / "stick_pressed.png")
+        joystick_up = load_image(self._files / "joystick_released.png")
+        joystick_down = load_image(self._files / "joystick_pressed.png")
         self._assets = {
             "southButton": {
-                1: {"img": load_image(self._files / "B_pressed.png"), "loc": (628, 279)}
-            },
-            "eastButton": {
                 1: {
                     "img": load_image(self._files / "A_pressed.png"),
-                    "loc": (686, 222),
+                    "loc": (629 + 5, 203+5),
                 }
+            },
+            "eastButton": {
+                1: {"img": load_image(self._files / "B_pressed.png"), "loc": (570 + 5, 254 + 5)}
             },
             "westButton": {
                 1: {
-                    "img": load_image(self._files / "Y_pressed.png"),
-                    "loc": (570, 222),
+                    "img": load_image(self._files / "X_pressed.png"),
+                    "loc": (570 + 5, 152+5),
                 }
             },
             "northButton": {
                 1: {
-                    "img": load_image(self._files / "X_pressed.png"),
-                    "loc": (628, 164),
+                    "img": load_image(self._files / "Y_pressed.png"),
+                    "loc": (512 + 5, 202+5),
                 }
             },
-            "leftBumper": {1: {"img": pygame.transform.flip(bumper, True, False), "loc": (114, 99)}},
-            "rightBumper": {1: {"img": bumper, "loc": (603, 99)}},
+            "leftBumper": {1: {"img": pygame.transform.flip(bumper, True, False), "loc": (110 + 5, 75+5)}},
+            "rightBumper": {1: {"img": bumper, "loc": (509 + 5, 75+5)}},
             "leftCenterButton": {
                 1: {
-                    "img": load_image(self._files / "share_pressed.png"),
-                    "loc": (232, 148),
+                    "img": load_image(self._files / "select_pressed.png"),
+                    "loc": (292 + 5, 158+5),
                 }
             },
             "rightCenterButton": {
                 1: {
-                    "img": load_image(self._files / "options_pressed.png"),
-                    "loc": (556, 148),
+                    "img": load_image(self._files / "start_pressed.png"),
+                    "loc": (476 + 5, 158+5),
                 }
             },
             "centerButton": {
                 1: {
-                    "img": load_image(self._files / "touchpad_pressed.png"),
-                    "loc": (277, 127),
+                    "img": load_image(self._files / "capture_pressed.png"),
+                    "loc": (332 + 5, 215+5),
                 }
             },
             "platformButton": {
                 1: {
-                    "img": load_image(self._files / "ps_pressed.png"),
-                    "loc": (387, 344),
+                    "img": load_image(self._files / "home_pressed.png"),
+                    "loc": (437 + 5, 214+5),
                 }
             },
             "leftJoystick": {
-                0: {"img": joystick_up, "loc": (235, 313)},
-                1: {"img": joystick_down, "loc": (235, 313)},
+                0: {"img": joystick_up, "loc": (148 + 5, 184+5)},
+                1: {"img": joystick_down, "loc": (148 + 5, 184+5)},
             },
             "rightJoystick": {
-                0: {"img": joystick_up, "loc": (491, 314)},
-                1: {"img": joystick_down, "loc": (491, 314)},
+                0: {"img": joystick_up, "loc": (451 + 5, 285+5)},
+                1: {"img": joystick_down, "loc": (451 + 5, 285+5)},
             },
             "DPAD": {
                 0: {
                     -1: {
                         "img": load_image(self._files / "dpad_left.png"),
-                        "loc": (98, 230),
+                        "loc": (232 + 5, 318+5),
                     },
                     1: {
                         "img": load_image(self._files / "dpad_right.png"),
-                        "loc": (168, 230),
+                        "loc": (301 + 5, 318+5),
                     },
                 },
                 1: {
                     -1: {
                         "img": load_image(self._files / "dpad_down.png"),
-                        "loc": (140, 259),
+                        "loc": (269 + 5, 351+5),
                     },
                     1: {
                         "img": load_image(self._files / "dpad_up.png"),
-                        "loc": (140, 186),
+                        "loc": (269 + 5, 280+5),
                     },
                 },
             },
             "D-pad Up": {
                 1: {
                         "img": load_image(self._files / "dpad_up.png"),
-                        "loc": (140, 186),
+                        "loc": (269 + 5, 280+5),
                 },
             },          
             "D-pad Down": {
                 1: {
                         "img": load_image(self._files / "dpad_down.png"),
-                        "loc": (140, 259),
+                        "loc": (269 + 5, 351+5),
                 },
             },          
             "D-pad Left": {
                 1: {
                         "img": load_image(self._files / "dpad_left.png"),
-                        "loc": (98, 230),
+                        "loc": (232 + 5, 318+5),
                 },
             },          
             "D-pad Right": {
                 1:  {
                         "img": load_image(self._files / "dpad_right.png"),
-                        "loc": (168, 230),
+                        "loc": (301 + 5, 318+5),
                 },
             },
         }

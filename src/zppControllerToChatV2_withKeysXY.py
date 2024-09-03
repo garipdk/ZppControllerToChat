@@ -51,7 +51,7 @@ class ControllerOverlayApp:
         self.platform_map = {
             0: (gamepad_assets.PS4Assets, "ps4/switch"),
             1: (gamepad_assets.Xbox1Assets, "xbox1"),
-            #2: (gamepad_assets.SwitchAssets, "ps4/switch"),
+            2: (gamepad_assets.SwitchAssets, "ps4/switch"),
         }
         self.asset_map = self.platform_map[self.idx][0]()
         gamepad_type = self.platform_map[self.idx][1]
@@ -122,8 +122,7 @@ class ControllerOverlayApp:
         self.close_button = Button(self.window_size[0] - 30 - 10, 10, 30, 30 , font1, "x", pygame.mixer.music.stop, base_color=RED, hover_color=BLACKRED)
          
         # Create UI elements
-        supported_gps = ("PlayStation 4", "Xbox One")
-        #supported_gps = ("PlayStation 4", "Xbox One", "Switch")
+        supported_gps = ("PlayStation 4", "Xbox One", "Switch")
         self.line_edit0 = LineEdit(base_x - 30, base_y, base_width0, base_height, font, "Les deux phrases de spam qui alternent :", False)
         self.line_edit1 = LineEdit(base_x, base_y + base_height + int(0), base_width, base_height, font, self.first_string)
         self.ibeam_cursor_needed.append(self.line_edit1)
