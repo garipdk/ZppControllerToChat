@@ -49,7 +49,7 @@ class ControllerOverlayApp:
             self.idx = 0
         self.file_path = file_path
         self.platform_map = {
-            0: (gamepad_assets.PS4Assets, "ps4"),
+            0: (gamepad_assets.PS4Assets, "ps4/switch"),
             1: (gamepad_assets.Xbox1Assets, "xbox1"),
         }
         self.asset_map = self.platform_map[self.idx][0]()
@@ -316,7 +316,7 @@ class ControllerOverlayApp:
                 ):
                     current_controller_type = "xbox1"
                 else:
-                    current_controller_type = "ps4"
+                    current_controller_type = "ps4/switch"
                 num_tmp = 0
                 if joystick.get_button(0) == 1:
                     type_word("a", self.delais)

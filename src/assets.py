@@ -8,7 +8,7 @@ def load_image(path):
 
 class ButtonTranslator:
 
-    ps4 = {
+    ps4switch = {
         0: ("southButton", 0),
         1: ("eastButton", 1),
         2: ("westButton", 2),
@@ -55,7 +55,6 @@ class ButtonTranslator:
         "LeftTrigger": (4, "LeftTrigger"),
         "RightTrigger": (5, "RightTrigger"),
     }
-
     def __init__(self, platform: str):
         """
         platform - the actual platform of the gamepad so we can translate the button numbers into their respective controls
@@ -66,9 +65,9 @@ class ButtonTranslator:
             current_platform = self.shown_platform
         
         if self.shown_platform == current_platform:
-            if self.shown_platform == "ps4":
+            if self.shown_platform == "ps4/switch":
                 try:
-                    return self.ps4[item][0]
+                    return self.ps4switch[item][0]
                 except KeyError:
                     pass
             elif self.shown_platform == "xbox1":
@@ -77,14 +76,14 @@ class ButtonTranslator:
                 except KeyError:
                     pass
         else:
-            if current_platform == "ps4":
+            if current_platform == "ps4/switch":
                 try:
-                    return self.xbox1[self.ps4[item][1]][0]
+                    return self.xbox1[self.ps4switch[item][1]][0]
                 except KeyError:
                     pass
             elif current_platform == "xbox1":
                 try:
-                    return self.ps4[self.xbox1[item][1]][0]
+                    return self.ps4switch[self.xbox1[item][1]][0]
                 except KeyError:
                     pass
 
@@ -194,6 +193,155 @@ class PS4Assets:
                     "img": load_image(self._files / "right_stick_pressed.png"),
                     "loc": (491, 314),
                 },
+            },
+            "DPAD": {
+                0: {
+                    -1: {
+                        "img": load_image(self._files / "dpad_left.png"),
+                        "loc": (98, 230),
+                    },
+                    1: {
+                        "img": load_image(self._files / "dpad_right.png"),
+                        "loc": (168, 230),
+                    },
+                },
+                1: {
+                    -1: {
+                        "img": load_image(self._files / "dpad_down.png"),
+                        "loc": (140, 259),
+                    },
+                    1: {
+                        "img": load_image(self._files / "dpad_up.png"),
+                        "loc": (140, 186),
+                    },
+                },
+            },
+            "D-pad Up": {
+                1: {
+                        "img": load_image(self._files / "dpad_up.png"),
+                        "loc": (140, 186),
+                },
+            },          
+            "D-pad Down": {
+                1: {
+                        "img": load_image(self._files / "dpad_down.png"),
+                        "loc": (140, 259),
+                },
+            },          
+            "D-pad Left": {
+                1: {
+                        "img": load_image(self._files / "dpad_left.png"),
+                        "loc": (98, 230),
+                },
+            },          
+            "D-pad Right": {
+                1:  {
+                        "img": load_image(self._files / "dpad_right.png"),
+                        "loc": (168, 230),
+                },
+            },
+        }
+        self._loaded = True
+
+
+class SwitchAssets:
+
+    analogs = ("leftJoystick", "rightJoystick")
+    left_analog = "leftJoystick"
+    right_analog = "rightJoystick"
+
+    left_stick_x = "LeftStickX"
+    left_stick_y = "LeftStickY"
+    right_stick_x = "RightStickX"
+    right_stick_y = "RightStickY"
+    
+    left_trigger = "LeftTrigger"
+    right_trigger = "RightTrigger"
+
+    def __init__(self):
+        self._loaded = False
+        self._assets = {}
+        self._files = pathlib.Path(__file__).parent / "main_assets" / "switch" / "pngs"
+
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return self._assets[item]
+        elif isinstance(item, tuple):  # Hat/ DPAD value
+            imgs = []
+            for idx, i in enumerate(item):
+                if i == 0:
+                    continue
+                else:
+                    dat = self._assets["DPAD"][idx][i]
+                    imgs.append((dat["img"], dat["loc"]))
+            return imgs
+
+    @property
+    def loaded(self):
+        return self._loaded
+
+    def load(self):
+        self._base = load_image(self._files / "controller_base.png")
+        self.left_trigger = {'img': load_image(self._files / 'left_trigger_pressed.png'), 'loc': (113, 5)}
+        self.right_trigger = {'img': load_image(self._files / 'right_trigger_pressed.png'), 'loc': (602, 5)}
+        bumper = load_image(self._files / "bumper_pressed.png")
+        joystick_up = load_image(self._files / "stick_released.png")
+        joystick_down = load_image(self._files / "stick_pressed.png")
+        self._assets = {
+            "southButton": {
+                1: {"img": load_image(self._files / "B_pressed.png"), "loc": (628, 279)}
+            },
+            "eastButton": {
+                1: {
+                    "img": load_image(self._files / "A_pressed.png"),
+                    "loc": (686, 222),
+                }
+            },
+            "westButton": {
+                1: {
+                    "img": load_image(self._files / "Y_pressed.png"),
+                    "loc": (570, 222),
+                }
+            },
+            "northButton": {
+                1: {
+                    "img": load_image(self._files / "X_pressed.png"),
+                    "loc": (628, 164),
+                }
+            },
+            "leftBumper": {1: {"img": pygame.transform.flip(bumper, True, False), "loc": (114, 99)}},
+            "rightBumper": {1: {"img": bumper, "loc": (603, 99)}},
+            "leftCenterButton": {
+                1: {
+                    "img": load_image(self._files / "share_pressed.png"),
+                    "loc": (232, 148),
+                }
+            },
+            "rightCenterButton": {
+                1: {
+                    "img": load_image(self._files / "options_pressed.png"),
+                    "loc": (556, 148),
+                }
+            },
+            "centerButton": {
+                1: {
+                    "img": load_image(self._files / "touchpad_pressed.png"),
+                    "loc": (277, 127),
+                }
+            },
+            "platformButton": {
+                1: {
+                    "img": load_image(self._files / "ps_pressed.png"),
+                    "loc": (387, 344),
+                }
+            },
+            "leftJoystick": {
+                0: {"img": joystick_up, "loc": (235, 313)},
+                1: {"img": joystick_down, "loc": (235, 313)},
+            },
+            "rightJoystick": {
+                0: {"img": joystick_up, "loc": (491, 314)},
+                1: {"img": joystick_down, "loc": (491, 314)},
             },
             "DPAD": {
                 0: {
