@@ -14,6 +14,9 @@ D'ici : https://github.com/Sitryk/gamepadviewer-python
 J'ai lu le code et il est clean d'après moi donc je l'ai intégré à ce projet et je le cite ici pour pas avoir de problèmes
 Normalement avec ça license il devrait pas y avoir de soucis mais si il y en a contacte moi en réagissant sur ce projet
 
+# D'où viens l'icon du soft
+de ilovedazai sur discord qui l'avait fait pendant le zevent de 2022
+
 # Utilisation
  - Touche A : tape "A" ou "a" dans le chat puis entrée
  - Touche B : tape "B" ou "b" dans le chat puis entrée
