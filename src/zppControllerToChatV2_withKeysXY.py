@@ -27,6 +27,7 @@ BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 LIGHT_GRAY = (230, 230, 230)
 BLUE = (0, 120, 215)
+GREEN = (40, 200, 70)
 
 upper = False
 keyboard = Controller()
@@ -65,6 +66,9 @@ class ControllerOverlayApp:
         self.delais = delais
         self.delais_tmp = delais_tmp
 
+        self.ibeam_cursor_needed = []
+        self.hand_cursor_needed = []
+
         pygame.init()
         pygame.joystick.init()
         num_controllers = pygame.joystick.get_count()
@@ -99,22 +103,26 @@ class ControllerOverlayApp:
             
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One")
-        self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :")
-        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(20), base_width, base_height, font, self.first_string)
-        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(40), base_width, base_height, font, self.second_string)
+        self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :", False)
+        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(0), base_width, base_height, font, self.first_string)
+        self.ibeam_cursor_needed.append(self.line_edit1)
+        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(10), base_width, base_height, font, self.second_string)
+        self.ibeam_cursor_needed.append(self.line_edit2)
 
-        self.validateButton = Button(base_x, base_y + 3 * base_height + int(60), base_width, base_height, font, "Valider", self.save_to_json)
 
-        self.colorButton = Button(base_x, base_y + 4 * base_height + int(80), base_width, base_height, font, "Couleur de font", self.get_colour)
+        self.validateButton = Button(base_x, base_y + 3 * base_height + int(20), base_width, base_height, font, "Valider", self.save_to_json, hover_color=GREEN)
 
-        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(100), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
-    
-        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(140), base_width, base_height, font, "Delais")
-        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(150), 50, base_height, font, f"{self.delais:.2f} s")
-        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(150), 45, base_height, font, "+", self.add_delais)
-        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(150), 45, base_height, font, "-", self.sub_delais)
+        self.colorButton = Button(base_x, base_y + 4 * base_height + int(40), base_width, base_height, font, "Couleur de fond", self.get_colour, hover_color=BLUE)
 
-        self.checkbox = CheckBox(base_x, base_y + 8 * base_height + int(170), 20, 20, font, "CheckBox")
+        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(60), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
+        self.hand_cursor_needed.append(self.controller_dropdown)
+
+        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(80), base_width, base_height, font, "Delais : ", False)
+        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(80), 50, base_height, font, f"{self.delais:.2f} s")
+        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(80), 45, base_height, font, "+", self.add_delais)
+        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(80), 45, base_height, font, "-", self.sub_delais)
+
+        self.checkbox = CheckBox(base_x, base_y + 8 * base_height + int(90), 20, 20, font, "CheckBox")
 
     def add_delais(self):
         # recupper le bouton radio pour savoir quoi ajouter
@@ -205,6 +213,25 @@ class ControllerOverlayApp:
                             self.screen = pygame.display.set_mode(
                                 self.window_size, pygame.RESIZABLE | pygame.SCALED | pygame.NOFRAME
                             )
+                elif event.type == pygame.MOUSEMOTION:
+                    special_cursor_needed = 0
+                    for le in self.ibeam_cursor_needed:
+                        if le.rect.collidepoint(event.pos):
+                            special_cursor_needed = 1
+                            break
+                        
+                    for h in self.hand_cursor_needed:
+                        if h.rect.collidepoint(event.pos):
+                            special_cursor_needed = 2
+                            break
+
+                    match special_cursor_needed:
+                        case 1:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+                        case 2:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        case _:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
                 if event.type == pygame.JOYDEVICEADDED:
                     joy = pygame.joystick.Joystick(event.device_index)
@@ -436,7 +463,7 @@ class ControllerOverlayApp:
 
 # Class for the Dropdown widget
 class Dropdown:
-    def __init__(self, x, y, w, h, options, font, callback, default_option=0):
+    def __init__(self, x, y, w, h, options, font, callback, default_option=0, base_color=LIGHT_GRAY, hover_color=WHITE):
         self.rect = pygame.Rect(x, y, w, h)
         self.options = options
         self.selected_option = options[default_option] if default_option < len(options) else options[0]
@@ -444,11 +471,32 @@ class Dropdown:
         self.active = False
         self.hovered = False
         self.callback = callback
+        self.base_color = base_color
+        self.hover_color = hover_color
 
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, LIGHT_GRAY if self.hovered else WHITE, self.rect, 0)
+        pygame.draw.rect(screen, self.base_color if self.hovered else self.hover_color, self.rect, 0)
         pygame.draw.rect(screen, BLACK, self.rect, 2)
+        
+        # dessiner un carée pour y mettre le future triangle
+        pygame.draw.rect(screen, BLACK, pygame.Rect(self.rect.right - self.rect.height, self.rect.top, self.rect.height, self.rect.height), 2)
+
+        # points pour faire un triangle vers le bas
+        downward_triangle = []
+        downward_triangle.append((self.rect.right - self.rect.height + 12, self.rect.top + 12))
+        downward_triangle.append((self.rect.right - 12, self.rect.top + 12))
+        downward_triangle.append((self.rect.right - self.rect.height + 12 + ((self.rect.right - 12) - (self.rect.right - self.rect.height + 12)) * 0.5, self.rect.bottom - 12))
+
+        # points pour faire un triangle vers le haut
+        upward_triangle = []
+        upward_triangle.append((self.rect.right - self.rect.height + 12, self.rect.bottom - 12))
+        upward_triangle.append((self.rect.right - 12, self.rect.bottom - 12))
+        upward_triangle.append((self.rect.right - self.rect.height + 12 + ((self.rect.right - 12) - (self.rect.right - self.rect.height + 12)) * 0.5, self.rect.top + 12))
+
+        # dessiner le bon triangle
+        pygame.draw.aalines(screen, BLACK, True, upward_triangle if self.active else downward_triangle)
+
         text = self.font.render(self.selected_option, True, BLACK)
         screen.blit(text, (self.rect.x + 10, self.rect.y + 10))
 
@@ -492,22 +540,35 @@ class Dropdown:
 
 # Class for the LineEdit widget
 class LineEdit:
-    def __init__(self, x, y, w, h, font, text=""):
+    def __init__(self, x, y, w, h, font, text="", border=True):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
         self.active = False
         self.color = GRAY
+        self.border = border
+
+        self.text_surface = self.font.render(self.text, True, BLACK)
+        self.text_rect = self.text_surface.get_rect()
+        self.cursor = pygame.Rect(self.text_rect.topright, (3, self.text_rect.height + 2))
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-        text_surface = self.font.render(self.text, True, BLACK)
-        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+        self.text_surface = self.font.render(self.text, True, BLACK)
+        if self.border:
+            pygame.draw.rect(screen, self.color, self.rect, 2)
+        screen.blit(self.text_surface, (self.rect.x + (5 if self.border else 0), self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2) + 2 ))
+        if self.active and time.time() % 1 > 0.5:
+           # bounding rectangle of the text
+            text_rect = self.text_surface.get_rect(topleft = (self.rect.x + 5, self.rect.y + 10))
+            # set cursor position
+            self.cursor.midleft = text_rect.midright
+            pygame.draw.rect(screen, self.color, self.cursor)
 
     def handle_event(self, event):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = True
@@ -527,21 +588,20 @@ class LineEdit:
     def set_value(self, text : str):
         self.text = text
 
-
 # Class for the Button widget
 class Button:
-    def __init__(self, x, y, w, h, font, text, callback):
-        global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
+    def __init__(self, x, y, w, h, font, text, callback, base_color=LIGHT_GRAY, hover_color=GRAY):
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
         self.callback = callback
-        self.color = GRAY
+        self.base_color = base_color
+        self.hover_color = hover_color
         self.hovered = False
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, self.color if self.hovered else LIGHT_GRAY, self.rect)
+        pygame.draw.rect(screen, self.hover_color if self.hovered else self.base_color, self.rect)
         pygame.draw.rect(screen, BLACK, self.rect, 2)
         text_surface = self.font.render(self.text, True, BLACK)
         screen.blit(
