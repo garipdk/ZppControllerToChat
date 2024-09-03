@@ -22,11 +22,13 @@ from screeninfo import get_monitors
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 RED = (255, 100, 100)
+BLACKRED = (127, 50, 50)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 LIGHT_GRAY = (230, 230, 230)
 BLUE = (0, 120, 215)
+GREEN = (40, 200, 70)
 
 upper = False
 keyboard = Controller()
@@ -34,6 +36,8 @@ a_string = ""
 copied_glob = pyperclip.paste()
 last_keystroke = time.time() - 2.0
 first_copy = last_keystroke
+
+MUSIC_END = pygame.USEREVENT+1
 
 class ControllerOverlayApp:
 
@@ -65,6 +69,24 @@ class ControllerOverlayApp:
         self.delais = delais
         self.delais_tmp = delais_tmp
 
+        self.ibeam_cursor_needed = []
+        self.hand_cursor_needed = []
+
+
+
+        ### KONAMI_CODE
+
+        pygame.mixer.init(44100,-16,2, 1024)
+        pygame.mixer.music.set_endevent(MUSIC_END)
+
+        self.code = ["haut","haut","bas","bas","gauche","droite","gauche","droite","b","a", "start"]
+        self.code_last_keystroke = ''
+        self.code_idx = 0
+        self.code_image = pygame.image.load(str(Path(__file__).parent / "main_assets" / "by_ShinyCyan.png"))
+        self.code_sound = pygame.mixer.music.load((str(Path(__file__).parent / "main_assets" / "flopEvent.ogg")))
+
+        ### KONAMI_CODE // END
+
         pygame.init()
         pygame.joystick.init()
         num_controllers = pygame.joystick.get_count()
@@ -95,33 +117,40 @@ class ControllerOverlayApp:
         # Font setup
         font = pygame.font.Font(None, int(22))
         font0 = pygame.font.Font(None, int(20))
+        font1 = pygame.font.Font(None, int(42))
 
-            
+        self.close_button = Button(self.window_size[0] - 30 - 10, 10, 30, 30 , font1, "x", pygame.mixer.music.stop, base_color=RED, hover_color=BLACKRED)
+         
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One")
-        self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :")
-        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(20), base_width, base_height, font, self.first_string)
-        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(40), base_width, base_height, font, self.second_string)
+        self.line_edit0 = LineEdit(base_x - 30, base_y, base_width0, base_height, font, "Les deux phrases de spam qui alternent :", False)
+        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(0), base_width, base_height, font, self.first_string)
+        self.ibeam_cursor_needed.append(self.line_edit1)
+        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(10), base_width, base_height, font, self.second_string)
+        self.ibeam_cursor_needed.append(self.line_edit2)
 
-        self.validateButton = Button(base_x, base_y + 3 * base_height + int(60), base_width, base_height, font, "Valider", self.save_to_json)
 
-        self.colorButton = Button(base_x, base_y + 4 * base_height + int(80), base_width, base_height, font, "Couleur de font", self.get_colour)
+        self.validateButton = Button(base_x, base_y + 3 * base_height + int(20), base_width, base_height, font, "Valider", self.save_to_json, hover_color=GREEN)
 
-        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(100), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
-    
-        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(140), base_width, base_height, font, "Delais")
-        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(150), 50, base_height, font, f"{self.delais:.2f} s")
-        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(150), 45, base_height, font, "+", self.add_delais)
-        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(150), 45, base_height, font, "-", self.sub_delais)
+        self.colorButton = Button(base_x, base_y + 4 * base_height + int(40), base_width, base_height, font, "Couleur de fond", self.get_colour, hover_color=BLUE)
+
+        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(60), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
+        self.hand_cursor_needed.append(self.controller_dropdown)
+
+        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(80), base_width, base_height, font, "Delais : ", False)
+        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(80), 50, base_height, font, f"{self.delais:.2f} s")
+        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(80), 45, base_height, font, "+", self.add_delais)
+        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(80), 45, base_height, font, "-", self.sub_delais)
+
+        self.radio_button_box = RadioButtonBox(base_x, base_y + 8 * base_height + int(100), self.screen.width - base_x - 10, 60, font, "Réglage avancé du delais", ["0.10s", "0.20s", "0.50s", "1s", "2s", "5s"], selected_option=2, button_font=font0)
 
     def add_delais(self):
         # recupper le bouton radio pour savoir quoi ajouter
-        new_delais = self.delais + 0.5
-
+        new_delais = self.delais + float(self.radio_button_box.get_value()[:-1])
         self.update_and_save_delais(new_delais)
 
     def sub_delais(self):
-        new_delais = self.delais - 0.5
+        new_delais = self.delais - float(self.radio_button_box.get_value()[:-1])
         new_delais = max(0, new_delais)
         # recupper le bouton radio pour savoir quoi ajouter
         self.update_and_save_delais(new_delais)
@@ -183,9 +212,10 @@ class ControllerOverlayApp:
         if col[0] != None and col[0] != self.COLOUR_KEY:
             self.COLOUR_KEY = col[0]
             self.save_to_json()
+
     def run(self):
         joysticks = {}
-        self.running = True 
+        self.running = True
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -203,6 +233,25 @@ class ControllerOverlayApp:
                             self.screen = pygame.display.set_mode(
                                 self.window_size, pygame.RESIZABLE | pygame.SCALED | pygame.NOFRAME
                             )
+                elif event.type == pygame.MOUSEMOTION:
+                    special_cursor_needed = 0
+                    for le in self.ibeam_cursor_needed:
+                        if le.rect.collidepoint(event.pos):
+                            special_cursor_needed = 1
+                            break
+                        
+                    for h in self.hand_cursor_needed:
+                        if h.rect.collidepoint(event.pos):
+                            special_cursor_needed = 2
+                            break
+
+                    match special_cursor_needed:
+                        case 1:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+                        case 2:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        case _:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
                 if event.type == pygame.JOYDEVICEADDED:
                     joy = pygame.joystick.Joystick(event.device_index)
@@ -232,6 +281,8 @@ class ControllerOverlayApp:
                     self.validateButton.handle_event(event)
             
                 self.colorButton.handle_event(event)
+                self.radio_button_box.handle_event(event)
+                self.close_button.handle_event(event)
             
             self.screen.fill(self.COLOUR_KEY)
             self.screen.blit(self.asset_map._base, (5, 5))
@@ -243,6 +294,7 @@ class ControllerOverlayApp:
             self.line_edit3.draw(self.screen)
             self.btn_sub.draw(self.screen)
             self.btn_add.draw(self.screen)
+            self.radio_button_box.draw(self.screen)
             self.controller_dropdown.draw(self.screen)
 
             if(self.line_edit1.get_value() != self.line_edit2.get_value() and
@@ -255,6 +307,8 @@ class ControllerOverlayApp:
             
             self.colorButton.draw(self.screen)
             
+            TMP_last = ""
+
             for joystick in joysticks.values():
                 current_controller_type = ""
                 if (
@@ -267,9 +321,11 @@ class ControllerOverlayApp:
                 num_tmp = 0
                 if joystick.get_button(0) == 1:
                     type_word("a", self.delais)
+                    TMP_last = "a"
 
                 if joystick.get_button(1) == 1:
                     type_word("b", self.delais)
+                    TMP_last = "b"
 
                 if current_controller_type == "xbox1":
                     num_tmp = joystick.get_button(5)
@@ -279,17 +335,22 @@ class ControllerOverlayApp:
                 if num_tmp == 1:
                     type_paste(self.first_string, self.second_string, self.delais)
 
-                if joystick.get_button(11) == 1:
-                    type_word("haut", self.delais)
+                if current_controller_type != "xbox1":
+                    if joystick.get_button(11) == 1:
+                        type_word("haut", self.delais)
+                        TMP_last = "haut"
 
-                if joystick.get_button(12) == 1:
-                    type_word("bas", self.delais)
+                    if joystick.get_button(12) == 1:
+                        type_word("bas", self.delais)
+                        TMP_last = "bas"
 
-                if joystick.get_button(13) == 1:
-                    type_word("droite", self.delais)
+                    if joystick.get_button(13) == 1:
+                        type_word("gauche", self.delais)
+                        TMP_last = "gauche"
 
-                if joystick.get_button(14) == 1:
-                    type_word("gauche", self.delais)
+                    if joystick.get_button(14) == 1:
+                        type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                 num_tmp = 0
                 if current_controller_type == "xbox1":
@@ -299,6 +360,7 @@ class ControllerOverlayApp:
 
                 if num_tmp == 1:
                     type_word("start", self.delais)
+                    TMP_last = "start"
 
                 need_to_quit = 0
                 if current_controller_type == "xbox1":
@@ -315,15 +377,19 @@ class ControllerOverlayApp:
 
                     if hat[1] == 1:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
 
                     if hat[1] == -1:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
 
                     if hat[0] == 1:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                     if hat[0] == -1:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
 
                 axes = joystick.get_numaxes()
 
@@ -332,24 +398,32 @@ class ControllerOverlayApp:
                     y = joystick.get_axis(1)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                 if axes >= 4:
                     x = joystick.get_axis(2)
                     y = joystick.get_axis(3)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
                 
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
@@ -421,12 +495,35 @@ class ControllerOverlayApp:
                         self.screen.blit(lt['img'], lt['loc'])
                     if max(0, (joystick.get_axis(5) + 1) / 2) > self.trigger_deadzone:
                        self.screen.blit(rt['img'], rt['loc'])
+
+
+                ### KONAMI_CODE
+                if (TMP_last != self.code_last_keystroke):
+                    self.code_last_keystroke = TMP_last
+                    if self.code_last_keystroke != '' and self.code_last_keystroke == self.code[self.code_idx]:
+                        self.code_idx += 1
+                        if (self.code_idx>= len(self.code)):
+                            pygame.mixer.music.play()
+                            self.code_idx = 0
+                    elif self.code_last_keystroke != '':
+                        self.code_idx = 0
+
+                if pygame.mixer.music.get_busy():
+                    self.screen.fill((0x18, 0x18, 0x18))
+                    self.screen.blit(self.code_image, ((self.screen.width / 2) - (self.code_image.width / 2), 10))
+                    font = pygame.font.Font(None, int(22))
+                    self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
+                    self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
+                    self.close_button.draw(self.screen)
+                ### KONAMI_CODE // END
+
+
                 pygame.display.update()
 
 
 # Class for the Dropdown widget
 class Dropdown:
-    def __init__(self, x, y, w, h, options, font, callback, default_option=0):
+    def __init__(self, x, y, w, h, options, font, callback, default_option=0, base_color=LIGHT_GRAY, hover_color=WHITE):
         self.rect = pygame.Rect(x, y, w, h)
         self.options = options
         self.selected_option = options[default_option] if default_option < len(options) else options[0]
@@ -434,11 +531,32 @@ class Dropdown:
         self.active = False
         self.hovered = False
         self.callback = callback
+        self.base_color = base_color
+        self.hover_color = hover_color
 
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, LIGHT_GRAY if self.hovered else WHITE, self.rect, 0)
+        pygame.draw.rect(screen, self.base_color if self.hovered else self.hover_color, self.rect, 0)
         pygame.draw.rect(screen, BLACK, self.rect, 2)
+        
+        # dessiner un carée pour y mettre le future triangle
+        pygame.draw.rect(screen, BLACK, pygame.Rect(self.rect.right - self.rect.height, self.rect.top, self.rect.height, self.rect.height), 2)
+
+        # points pour faire un triangle vers le bas
+        downward_triangle = []
+        downward_triangle.append((self.rect.right - self.rect.height + 12, self.rect.top + 12))
+        downward_triangle.append((self.rect.right - 12, self.rect.top + 12))
+        downward_triangle.append((self.rect.right - self.rect.height + 12 + ((self.rect.right - 12) - (self.rect.right - self.rect.height + 12)) * 0.5, self.rect.bottom - 12))
+
+        # points pour faire un triangle vers le haut
+        upward_triangle = []
+        upward_triangle.append((self.rect.right - self.rect.height + 12, self.rect.bottom - 12))
+        upward_triangle.append((self.rect.right - 12, self.rect.bottom - 12))
+        upward_triangle.append((self.rect.right - self.rect.height + 12 + ((self.rect.right - 12) - (self.rect.right - self.rect.height + 12)) * 0.5, self.rect.top + 12))
+
+        # dessiner le bon triangle
+        pygame.draw.aalines(screen, BLACK, True, upward_triangle if self.active else downward_triangle)
+
         text = self.font.render(self.selected_option, True, BLACK)
         screen.blit(text, (self.rect.x + 10, self.rect.y + 10))
 
@@ -482,22 +600,35 @@ class Dropdown:
 
 # Class for the LineEdit widget
 class LineEdit:
-    def __init__(self, x, y, w, h, font, text=""):
+    def __init__(self, x, y, w, h, font, text="", border=True):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
         self.active = False
         self.color = GRAY
+        self.border = border
+
+        self.text_surface = self.font.render(self.text, True, BLACK)
+        self.text_rect = self.text_surface.get_rect()
+        self.cursor = pygame.Rect(self.text_rect.topright, (3, self.text_rect.height + 2))
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, self.color, self.rect, 2)
-        text_surface = self.font.render(self.text, True, BLACK)
-        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+        self.text_surface = self.font.render(self.text, True, BLACK)
+        if self.border:
+            pygame.draw.rect(screen, self.color, self.rect, 2)
+        screen.blit(self.text_surface, (self.rect.x + (5 if self.border else 0), self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2) + 2 ))
+        if self.active and time.time() % 1 > 0.5:
+           # bounding rectangle of the text
+            text_rect = self.text_surface.get_rect(topleft = (self.rect.x + 5, self.rect.y + 10))
+            # set cursor position
+            self.cursor.midleft = text_rect.midright
+            pygame.draw.rect(screen, self.color, self.cursor)
 
     def handle_event(self, event):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
+        
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = True
@@ -517,21 +648,21 @@ class LineEdit:
     def set_value(self, text : str):
         self.text = text
 
-
 # Class for the Button widget
 class Button:
-    def __init__(self, x, y, w, h, font, text, callback):
-        global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
+    def __init__(self, x, y, w, h, font, text, callback, callback_args:list[str] = None, base_color=LIGHT_GRAY, hover_color=GRAY):
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
         self.callback = callback
-        self.color = GRAY
+        self.base_color = base_color
+        self.hover_color = hover_color
         self.hovered = False
+        self.callback_args = callback_args
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        pygame.draw.rect(screen, self.color if self.hovered else LIGHT_GRAY, self.rect)
+        pygame.draw.rect(screen, self.hover_color if self.hovered else self.base_color, self.rect)
         pygame.draw.rect(screen, BLACK, self.rect, 2)
         text_surface = self.font.render(self.text, True, BLACK)
         screen.blit(
@@ -545,9 +676,145 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.callback()
+                if self.callback_args:
+                    self.callback(''.join(self.callback_args))
+                else:
+                    self.callback()
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
+
+    def set_base_color(self, color):
+        self.base_color = color
+    
+    def set_hover_color(self, color):
+        self.hover_color = color
+
+
+# Class for the CheckBox widget
+class CheckBox:
+
+    def __init__(self, x, y, w, h, font=None, text=None, checked=False):
+        global  GRAY
+        self.rect = pygame.Rect(x, y, w, h)
+        self.active = False
+        self.color = GRAY
+        self.checked = checked
+        self.font = font
+        self.text = text
+        self.text_surface = None
+
+        if self.font and self.text:
+            self.text_surface = self.font.render(self.text, True, BLACK)
+
+    def draw(self, screen):
+        global BLACK
+
+        # SECTION CheckBox
+        pygame.draw.rect(screen, self.color, self.rect, 2)
+
+        if self.checked:
+            icon = pygame.image.load(str(Path(__file__).parent / "main_assets" / "check-mark-icon.png"))
+            
+            offset = 0.2
+            check_mark_offset = (self.rect.width * offset, self.rect.height * offset)
+            check_icon_size = (self.rect.width + check_mark_offset[0], self.rect.height + check_mark_offset[1])
+            check_icon = pygame.transform.scale(icon, check_icon_size)
+            check_icon_position = ( self.rect.x - check_mark_offset[0] / 2, self.rect.y - check_mark_offset[1])
+            
+            screen.blit(check_icon, check_icon_position)
+
+        # SECTION Label
+        if self.text_surface:
+            screen.blit(self.text_surface, (self.rect.x + self.rect.width + 5, self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2) + 2 ))
+
+
+    def handle_event(self, event):
+        global  GRAY, BLUE
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                self.checked = not self.checked
+
+        if event.type == pygame.MOUSEMOTION:
+            if self.rect.collidepoint(event.pos):
+                self.active = True
+                self.color = BLUE
+            else:
+                self.active = False
+                self.color = GRAY
+
+    def get_checked(self):
+        return self.checked
+
+    def get_size(self):
+        return ( self.rect.width + 5 + (self.text_surface.width if self.text_surface else 0), self.rect.height)
+
+
+# Class for the RadioButtonBox widget
+class RadioButtonBox:
+
+    def __init__(self, x, y, w, h, font, text, labels: list[str], maximized=False, padding=5, button_font=None, selected_option=0):
+        global  GRAY
+        self.rect = pygame.Rect(x, y, w, h)
+        self.active = False
+        self.color = GRAY
+        self.font = font
+        self.text = text
+        self.buttons = []
+        self.maximized = maximized
+        self.checkbox = CheckBox(self.rect.x + 10 * 1.5, self.rect.y - 10 , 20, 20, font, self.text, maximized)
+        self.labels = labels
+        self.padding = 5
+        self.button_font = button_font if button_font else font
+        self.selected_option = selected_option
+        
+        self.item_count = len(self.labels)
+        padding_count = self.item_count + 1
+        button_width = (self.rect.width - (padding * padding_count)) // self.item_count
+
+        for i in range(0, self.item_count):
+            xx = self.rect.x + (i+ 1) * padding + (i * button_width) 
+            yy = self.rect.y + padding + (self.checkbox.rect.height / 2)
+            btn = Button(xx, yy, button_width, self.rect.height - 2*padding - (self.checkbox.rect.height / 2), self.button_font, self.labels[i], self.button_click, callback_args=[str(i)], base_color=LIGHT_GRAY, hover_color=BLUE)
+            self.buttons.append(btn)
+
+    def draw(self, screen):
+
+        self.maximized = self.checkbox.checked
+        self.checkbox.draw(screen)
+
+        if self.maximized:
+
+            # SECTION Contour
+            padding = 10
+            text_w, text_h = self.checkbox.get_size()
+
+            lines = []
+            lines.append((self.rect.x + padding * 2 + text_w, self.rect.y))
+            lines.append((self.rect.x + self.rect.width, self.rect.y))
+            lines.append((self.rect.x + self.rect.width, self.rect.y + self.rect.height))
+            lines.append((self.rect.x , self.rect.y + self.rect.height))
+            lines.append((self.rect.x , self.rect.y))
+            lines.append((self.rect.x + padding, self.rect.y))
+            pygame.draw.lines(screen, self.color, False, lines, 2)
+
+            for i in range(0, len(self.buttons)):
+                if self.selected_option == i : self.button_click(i)
+                self.buttons[i].draw(screen)
+
+    def handle_event(self, event):
+        self.checkbox.handle_event(event)
+        for i in range(0, len(self.buttons)):
+            self.buttons[i].handle_event(event)
+
+
+    def button_click(self, idx):
+        self.selected_option = int(idx)
+        for i in range(0, len(self.buttons)):
+            self.buttons[i].set_base_color(GREEN if i == int(idx) else WHITE)
+
+    def get_value(self):
+        return self.buttons[self.selected_option].text
 
 
 def type_word(word, delais: float):

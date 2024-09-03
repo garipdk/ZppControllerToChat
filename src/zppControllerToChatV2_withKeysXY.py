@@ -22,6 +22,7 @@ from screeninfo import get_monitors
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 RED = (255, 100, 100)
+BLACKRED = (127, 50, 50)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
@@ -35,6 +36,8 @@ a_string = ""
 copied_glob = pyperclip.paste()
 last_keystroke = time.time() - 2.0
 first_copy = last_keystroke
+
+MUSIC_END = pygame.USEREVENT+1
 
 class ControllerOverlayApp:
 
@@ -69,6 +72,21 @@ class ControllerOverlayApp:
         self.ibeam_cursor_needed = []
         self.hand_cursor_needed = []
 
+
+
+        ### KONAMI_CODE
+
+        pygame.mixer.init(44100,-16,2, 1024)
+        pygame.mixer.music.set_endevent(MUSIC_END)
+
+        self.code = ["haut","haut","bas","bas","gauche","droite","gauche","droite","b","a", "start"]
+        self.code_last_keystroke = ''
+        self.code_idx = 0
+        self.code_image = pygame.image.load(str(Path(__file__).parent / "main_assets" / "by_ShinyCyan.png"))
+        self.code_sound = pygame.mixer.music.load((str(Path(__file__).parent / "main_assets" / "flopEvent.ogg")))
+
+        ### KONAMI_CODE // END
+
         pygame.init()
         pygame.joystick.init()
         num_controllers = pygame.joystick.get_count()
@@ -99,11 +117,13 @@ class ControllerOverlayApp:
         # Font setup
         font = pygame.font.Font(None, int(22))
         font0 = pygame.font.Font(None, int(20))
+        font1 = pygame.font.Font(None, int(42))
 
-            
+        self.close_button = Button(self.window_size[0] - 30 - 10, 10, 30, 30 , font1, "x", pygame.mixer.music.stop, base_color=RED, hover_color=BLACKRED)
+         
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One")
-        self.line_edit0 = LineEdit(base_x, base_y, base_width0, base_height, font0, "Les deux phrases de spam qui alternent :", False)
+        self.line_edit0 = LineEdit(base_x - 30, base_y, base_width0, base_height, font, "Les deux phrases de spam qui alternent :", False)
         self.line_edit1 = LineEdit(base_x, base_y + base_height + int(0), base_width, base_height, font, self.first_string)
         self.ibeam_cursor_needed.append(self.line_edit1)
         self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(10), base_width, base_height, font, self.second_string)
@@ -192,9 +212,10 @@ class ControllerOverlayApp:
         if col[0] != None and col[0] != self.COLOUR_KEY:
             self.COLOUR_KEY = col[0]
             self.save_to_json()
+
     def run(self):
         joysticks = {}
-        self.running = True 
+        self.running = True
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -261,7 +282,7 @@ class ControllerOverlayApp:
             
                 self.colorButton.handle_event(event)
                 self.radio_button_box.handle_event(event)
-
+                self.close_button.handle_event(event)
             
             self.screen.fill(self.COLOUR_KEY)
             self.screen.blit(self.asset_map._base, (5, 5))
@@ -286,6 +307,8 @@ class ControllerOverlayApp:
             
             self.colorButton.draw(self.screen)
             
+            TMP_last = ""
+
             for joystick in joysticks.values():
                 current_controller_type = ""
                 if (
@@ -298,15 +321,19 @@ class ControllerOverlayApp:
                 num_tmp = 0
                 if joystick.get_button(0) == 1:
                     type_word("a", self.delais)
+                    TMP_last = "a"
 
                 if joystick.get_button(1) == 1:
                     type_word("b", self.delais)
+                    TMP_last = "b"
 
                 if joystick.get_button(2) == 1:
                     type_word("x", self.delais)
+                    TMP_last = "x"
 
                 if joystick.get_button(3) == 1:
                     type_word("y", self.delais)
+                    TMP_last = "y"
 
                 if current_controller_type == "xbox1":
                     num_tmp = joystick.get_button(5)
@@ -316,17 +343,22 @@ class ControllerOverlayApp:
                 if num_tmp == 1:
                     type_paste(self.first_string, self.second_string, self.delais)
 
-                if joystick.get_button(11) == 1:
-                    type_word("haut", self.delais)
+                if current_controller_type != "xbox1":
+                    if joystick.get_button(11) == 1:
+                        type_word("haut", self.delais)
+                        TMP_last = "haut"
 
-                if joystick.get_button(12) == 1:
-                    type_word("bas", self.delais)
+                    if joystick.get_button(12) == 1:
+                        type_word("bas", self.delais)
+                        TMP_last = "bas"
 
-                if joystick.get_button(13) == 1:
-                    type_word("droite", self.delais)
+                    if joystick.get_button(13) == 1:
+                        type_word("gauche", self.delais)
+                        TMP_last = "gauche"
 
-                if joystick.get_button(14) == 1:
-                    type_word("gauche", self.delais)
+                    if joystick.get_button(14) == 1:
+                        type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                 num_tmp = 0
                 if current_controller_type == "xbox1":
@@ -336,6 +368,7 @@ class ControllerOverlayApp:
 
                 if num_tmp == 1:
                     type_word("start", self.delais)
+                    TMP_last = "start"
 
                 need_to_quit = 0
                 if current_controller_type == "xbox1":
@@ -352,15 +385,19 @@ class ControllerOverlayApp:
 
                     if hat[1] == 1:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
 
                     if hat[1] == -1:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
 
                     if hat[0] == 1:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                     if hat[0] == -1:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
 
                 axes = joystick.get_numaxes()
 
@@ -369,24 +406,32 @@ class ControllerOverlayApp:
                     y = joystick.get_axis(1)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
 
                 if axes >= 4:
                     x = joystick.get_axis(2)
                     y = joystick.get_axis(3)
                     if y >= 0.5 and x < 0.5 and x > -0.5:
                         type_word("bas", self.delais)
+                        TMP_last = "bas"
                     elif y <= -0.5 and x < 0.5 and x > -0.5:
                         type_word("haut", self.delais)
+                        TMP_last = "haut"
                     elif x <= -0.5 and y < 0.5 and y > -0.5:
                         type_word("gauche", self.delais)
+                        TMP_last = "gauche"
                     elif x >= 0.5 and y < 0.5 and y > -0.5:
                         type_word("droite", self.delais)
+                        TMP_last = "droite"
                 
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
@@ -458,6 +503,29 @@ class ControllerOverlayApp:
                         self.screen.blit(lt['img'], lt['loc'])
                     if max(0, (joystick.get_axis(5) + 1) / 2) > self.trigger_deadzone:
                        self.screen.blit(rt['img'], rt['loc'])
+
+
+                ### KONAMI_CODE
+                if (TMP_last != self.code_last_keystroke):
+                    self.code_last_keystroke = TMP_last
+                    if self.code_last_keystroke != '' and self.code_last_keystroke == self.code[self.code_idx]:
+                        self.code_idx += 1
+                        if (self.code_idx>= len(self.code)):
+                            pygame.mixer.music.play()
+                            self.code_idx = 0
+                    elif self.code_last_keystroke != '':
+                        self.code_idx = 0
+
+                if pygame.mixer.music.get_busy():
+                    self.screen.fill((0x18, 0x18, 0x18))
+                    self.screen.blit(self.code_image, ((self.screen.width / 2) - (self.code_image.width / 2), 10))
+                    font = pygame.font.Font(None, int(22))
+                    self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
+                    self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
+                    self.close_button.draw(self.screen)
+                ### KONAMI_CODE // END
+
+
                 pygame.display.update()
 
 
@@ -653,20 +721,14 @@ class CheckBox:
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
         if self.checked:
-            ### Pour faire zolie en faisant dépasser l'icone
-
+            icon = pygame.image.load(str(Path(__file__).parent / "main_assets" / "check-mark-icon.png"))
+            
             offset = 0.2
             check_mark_offset = (self.rect.width * offset, self.rect.height * offset)
             check_icon_size = (self.rect.width + check_mark_offset[0], self.rect.height + check_mark_offset[1])
-            icon = pygame.image.load(str(Path(__file__).parent / "main_assets" / "check-mark-icon.png"))
             check_icon = pygame.transform.scale(icon, check_icon_size)
             check_icon_position = ( self.rect.x - check_mark_offset[0] / 2, self.rect.y - check_mark_offset[1])
 
-            ### Sinon
-            # check_icon = pygame.transform.scale(pygame.image.load(str("check-mark-icon.png")), (self.rect.width , self.rect.height))
-            # check_icon_position = ( self.rect.x, self.rect.y)
-            ###
-            
             screen.blit(check_icon, check_icon_position)
 
         # SECTION Label
