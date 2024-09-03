@@ -122,16 +122,15 @@ class ControllerOverlayApp:
         self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(80), 45, base_height, font, "+", self.add_delais)
         self.btn_sub = Button(base_x, base_y + 7 * base_height + int(80), 45, base_height, font, "-", self.sub_delais)
 
-        self.checkbox = CheckBox(base_x, base_y + 8 * base_height + int(90), 20, 20, font, "CheckBox")
+        self.radio_button_box = RadioButtonBox(base_x, base_y + 8 * base_height + int(100), self.screen.width - base_x - 10, 60, font, "Réglage avancé du delais", ["0.10s", "0.20s", "0.50s", "1s", "2s", "5s"], selected_option=2, button_font=font0)
 
     def add_delais(self):
         # recupper le bouton radio pour savoir quoi ajouter
-        new_delais = self.delais + 0.5
-
+        new_delais = self.delais + float(self.radio_button_box.get_value()[:-1])
         self.update_and_save_delais(new_delais)
 
     def sub_delais(self):
-        new_delais = self.delais - 0.5
+        new_delais = self.delais - float(self.radio_button_box.get_value()[:-1])
         new_delais = max(0, new_delais)
         # recupper le bouton radio pour savoir quoi ajouter
         self.update_and_save_delais(new_delais)
@@ -252,7 +251,6 @@ class ControllerOverlayApp:
                 self.line_edit2.handle_event(event)
                 self.btn_sub.handle_event(event)
                 self.btn_add.handle_event(event)
-                self.checkbox.handle_event(event)
                 if(self.line_edit1.get_value() != self.line_edit2.get_value() and
                     (self.line_edit1.get_value() != self.first_string or
                     self.line_edit2.get_value() != self.second_string) and
@@ -262,6 +260,8 @@ class ControllerOverlayApp:
                     self.validateButton.handle_event(event)
             
                 self.colorButton.handle_event(event)
+                self.radio_button_box.handle_event(event)
+
             
             self.screen.fill(self.COLOUR_KEY)
             self.screen.blit(self.asset_map._base, (5, 5))
@@ -273,7 +273,7 @@ class ControllerOverlayApp:
             self.line_edit3.draw(self.screen)
             self.btn_sub.draw(self.screen)
             self.btn_add.draw(self.screen)
-            self.checkbox.draw(self.screen)
+            self.radio_button_box.draw(self.screen)
             self.controller_dropdown.draw(self.screen)
 
             if(self.line_edit1.get_value() != self.line_edit2.get_value() and
@@ -590,7 +590,7 @@ class LineEdit:
 
 # Class for the Button widget
 class Button:
-    def __init__(self, x, y, w, h, font, text, callback, base_color=LIGHT_GRAY, hover_color=GRAY):
+    def __init__(self, x, y, w, h, font, text, callback, callback_args:list[str] = None, base_color=LIGHT_GRAY, hover_color=GRAY):
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
@@ -598,6 +598,7 @@ class Button:
         self.base_color = base_color
         self.hover_color = hover_color
         self.hovered = False
+        self.callback_args = callback_args
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
@@ -615,22 +616,36 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                self.callback()
+                if self.callback_args:
+                    self.callback(''.join(self.callback_args))
+                else:
+                    self.callback()
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
 
+    def set_base_color(self, color):
+        self.base_color = color
+    
+    def set_hover_color(self, color):
+        self.hover_color = color
 
+
+# Class for the CheckBox widget
 class CheckBox:
 
-    def __init__(self, x, y, w, h, font=None, text=None):
+    def __init__(self, x, y, w, h, font=None, text=None, checked=False):
         global  GRAY
         self.rect = pygame.Rect(x, y, w, h)
         self.active = False
         self.color = GRAY
-        self.checked = False
+        self.checked = checked
         self.font = font
         self.text = text
-        
+        self.text_surface = None
+
+        if self.font and self.text:
+            self.text_surface = self.font.render(self.text, True, BLACK)
+
     def draw(self, screen):
         global BLACK
 
@@ -655,9 +670,8 @@ class CheckBox:
             screen.blit(check_icon, check_icon_position)
 
         # SECTION Label
-        if self.font and self.text:
-            text_surface = self.font.render(self.text, True, BLACK)
-            screen.blit(text_surface, (self.rect.x + self.rect.width + 5, self.rect.y + (self.rect.height / 2) - (text_surface.get_height() / 2) + 2 ))
+        if self.text_surface:
+            screen.blit(self.text_surface, (self.rect.x + self.rect.width + 5, self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2) + 2 ))
 
 
     def handle_event(self, event):
@@ -677,6 +691,77 @@ class CheckBox:
 
     def get_checked(self):
         return self.checked
+
+    def get_size(self):
+        return ( self.rect.width + 5 + (self.text_surface.width if self.text_surface else 0), self.rect.height)
+
+
+# Class for the RadioButtonBox widget
+class RadioButtonBox:
+
+    def __init__(self, x, y, w, h, font, text, labels: list[str], maximized=False, padding=5, button_font=None, selected_option=0):
+        global  GRAY
+        self.rect = pygame.Rect(x, y, w, h)
+        self.active = False
+        self.color = GRAY
+        self.font = font
+        self.text = text
+        self.buttons = []
+        self.maximized = maximized
+        self.checkbox = CheckBox(self.rect.x + 10 * 1.5, self.rect.y - 10 , 20, 20, font, self.text, maximized)
+        self.labels = labels
+        self.padding = 5
+        self.button_font = button_font if button_font else font
+        self.selected_option = selected_option
+        
+        self.item_count = len(self.labels)
+        padding_count = self.item_count + 1
+        button_width = (self.rect.width - (padding * padding_count)) // self.item_count
+
+        for i in range(0, self.item_count):
+            xx = self.rect.x + (i+ 1) * padding + (i * button_width) 
+            yy = self.rect.y + padding + (self.checkbox.rect.height / 2)
+            btn = Button(xx, yy, button_width, self.rect.height - 2*padding - (self.checkbox.rect.height / 2), self.button_font, self.labels[i], self.button_click, callback_args=[str(i)], base_color=LIGHT_GRAY, hover_color=BLUE)
+            self.buttons.append(btn)
+
+    def draw(self, screen):
+
+        self.maximized = self.checkbox.checked
+        self.checkbox.draw(screen)
+
+        if self.maximized:
+
+            # SECTION Contour
+            padding = 10
+            text_w, text_h = self.checkbox.get_size()
+
+            lines = []
+            lines.append((self.rect.x + padding * 2 + text_w, self.rect.y))
+            lines.append((self.rect.x + self.rect.width, self.rect.y))
+            lines.append((self.rect.x + self.rect.width, self.rect.y + self.rect.height))
+            lines.append((self.rect.x , self.rect.y + self.rect.height))
+            lines.append((self.rect.x , self.rect.y))
+            lines.append((self.rect.x + padding, self.rect.y))
+            pygame.draw.lines(screen, self.color, False, lines, 2)
+
+            for i in range(0, len(self.buttons)):
+                if self.selected_option == i : self.button_click(i)
+                self.buttons[i].draw(screen)
+
+    def handle_event(self, event):
+        self.checkbox.handle_event(event)
+        for i in range(0, len(self.buttons)):
+            self.buttons[i].handle_event(event)
+
+
+    def button_click(self, idx):
+        self.selected_option = int(idx)
+        for i in range(0, len(self.buttons)):
+            self.buttons[i].set_base_color(GREEN if i == int(idx) else WHITE)
+
+    def get_value(self):
+        return self.buttons[self.selected_option].text
+
 
 def type_word(word, delais: float):
     global last_keystroke, upper
