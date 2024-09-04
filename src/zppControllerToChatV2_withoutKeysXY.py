@@ -21,7 +21,7 @@ from tkinter import colorchooser
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 RED = (255, 100, 100)
-BLACKRED = (127, 50, 50)
+DARK_RED = (127, 50, 50)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
@@ -35,8 +35,6 @@ a_string = ""
 copied_glob = pyperclip.paste()
 last_keystroke = time.time() - 2.0
 first_copy = last_keystroke
-
-MUSIC_END = pygame.USEREVENT+1
 
 class ControllerOverlayApp:
 
@@ -72,23 +70,30 @@ class ControllerOverlayApp:
         self.ibeam_cursor_needed = []
         self.hand_cursor_needed = []
 
+        ### Initialisation des modules
+        print("Search audio device : ", end="")
+        try:
+            pygame.mixer.init(44100,-16,2, 1024)
+            print("founded")
+            self.has_audio = True
+        except:
+            print("No audio device founded")
+            self.has_audio = False
 
+        pygame.display.init()
+        pygame.font.init()
+        pygame.joystick.init()
 
         ### KONAMI_CODE
-
-        pygame.mixer.init(44100,-16,2, 1024)
-        pygame.mixer.music.set_endevent(MUSIC_END)
-
         self.code = ["haut","haut","bas","bas","gauche","droite","gauche","droite","b","a", "start"]
         self.code_last_keystroke = ''
         self.code_idx = 0
         self.code_image = pygame.image.load(str(Path(__file__).parent / "main_assets" / "by_ShinyCyan.png"))
-        self.code_sound = pygame.mixer.music.load((str(Path(__file__).parent / "main_assets" / "flopEvent.ogg")))
+        if self.has_audio:
+            self.code_sound = pygame.mixer.music.load((str(Path(__file__).parent / "main_assets" / "flopEvent.ogg")))
 
         ### KONAMI_CODE // END
 
-        pygame.init()
-        pygame.joystick.init()
         num_controllers = pygame.joystick.get_count()
         print(
             "Lezgo avec "
@@ -119,7 +124,8 @@ class ControllerOverlayApp:
         font0 = pygame.font.Font(None, int(20))
         font1 = pygame.font.Font(None, int(42))
 
-        self.close_button = Button(self.window_size[0] - 30 - 10, 10, 30, 30 , font1, "x", pygame.mixer.music.stop, base_color=RED, hover_color=BLACKRED)
+        if self.has_audio:
+            self.close_button = Button(self.window_size[0] - 30 - 10, 10, 30, 30 , font1, "x", pygame.mixer.music.stop, base_color=RED, hover_color=DARK_RED)
          
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One", "Switch")
@@ -282,33 +288,40 @@ class ControllerOverlayApp:
             
                 self.colorButton.handle_event(event)
                 self.radio_button_box.handle_event(event)
-                self.close_button.handle_event(event)
+                if self.has_audio : self.close_button.handle_event(event)
             
-            self.screen.fill(self.COLOUR_KEY)
-            self.screen.blit(self.asset_map._base, (5, 5))
 
-            self.line_edit0.draw(self.screen)
-            self.line_edit1.draw(self.screen)
-            self.line_edit2.draw(self.screen)
-            self.line_edit4.draw(self.screen)
-            self.line_edit3.draw(self.screen)
-            self.btn_sub.draw(self.screen)
-            self.btn_add.draw(self.screen)
-            self.radio_button_box.draw(self.screen)
-            self.controller_dropdown.draw(self.screen)
+            if not joysticks:
+                self.screen.fill(BLACK)
+                font1 = pygame.font.Font(None, int(42))
+                text_surface = font1.render("Il n'y a pas de manettes mais tu peux la/les brancher maintenant 0 souss ;)", True, RED)
+                self.screen.blit(text_surface, ((self.window_size[0] - text_surface.get_width()) / 2, (self.window_size[1] - text_surface.get_height()) / 2))
+            else:
+                self.screen.fill(self.COLOUR_KEY)
+                self.screen.blit(self.asset_map._base, (5, 5))
 
-            if(self.line_edit1.get_value() != self.line_edit2.get_value() and
-                (self.line_edit1.get_value() != self.first_string or
-                self.line_edit2.get_value() != self.second_string) and
-                self.line_edit1.get_value() != "" and
-                self.line_edit2.get_value() != ""
-            ):
-                self.validateButton.draw(self.screen)
-            
-            self.colorButton.draw(self.screen)
-            
+                self.line_edit0.draw(self.screen)
+                self.line_edit1.draw(self.screen)
+                self.line_edit2.draw(self.screen)
+                self.line_edit4.draw(self.screen)
+                self.line_edit3.draw(self.screen)
+                self.btn_sub.draw(self.screen)
+                self.btn_add.draw(self.screen)
+                self.radio_button_box.draw(self.screen)
+                self.controller_dropdown.draw(self.screen)
+
+                if(self.line_edit1.get_value() != self.line_edit2.get_value() and
+                    (self.line_edit1.get_value() != self.first_string or
+                    self.line_edit2.get_value() != self.second_string) and
+                    self.line_edit1.get_value() != "" and
+                    self.line_edit2.get_value() != ""
+                ):
+                    self.validateButton.draw(self.screen)
+                
+                self.colorButton.draw(self.screen)
+
+
             TMP_last = ""
-
             for joystick in joysticks.values():
                 current_controller_type = ""
                 if (
@@ -496,29 +509,28 @@ class ControllerOverlayApp:
                     if max(0, (joystick.get_axis(5) + 1) / 2) > self.trigger_deadzone:
                        self.screen.blit(rt['img'], rt['loc'])
 
-
-                ### KONAMI_CODE
-                if (TMP_last != self.code_last_keystroke):
-                    self.code_last_keystroke = TMP_last
-                    if self.code_last_keystroke != '' and self.code_last_keystroke == self.code[self.code_idx]:
-                        self.code_idx += 1
-                        if (self.code_idx>= len(self.code)):
-                            pygame.mixer.music.play()
+                if self.has_audio:
+                    ### KONAMI_CODE
+                    if (TMP_last != self.code_last_keystroke):
+                        self.code_last_keystroke = TMP_last
+                        if self.code_last_keystroke != '' and self.code_last_keystroke == self.code[self.code_idx]:
+                            self.code_idx += 1
+                            if (self.code_idx>= len(self.code)):
+                                pygame.mixer.music.play()
+                                self.code_idx = 0
+                        elif self.code_last_keystroke != '':
                             self.code_idx = 0
-                    elif self.code_last_keystroke != '':
-                        self.code_idx = 0
 
-                if pygame.mixer.music.get_busy():
-                    self.screen.fill((0x18, 0x18, 0x18))
-                    self.screen.blit(self.code_image, ((self.screen.width / 2) - (self.code_image.width / 2), 10))
-                    font = pygame.font.Font(None, int(22))
-                    self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
-                    self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
-                    self.close_button.draw(self.screen)
-                ### KONAMI_CODE // END
+                    if pygame.mixer.music.get_busy():
+                        self.screen.fill((0x18, 0x18, 0x18))
+                        self.screen.blit(self.code_image, ((self.screen.width / 2) - (self.code_image.width / 2), 10))
+                        font = pygame.font.Font(None, int(22))
+                        self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
+                        self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
+                        self.close_button.draw(self.screen)
+                    ### KONAMI_CODE // END
 
-
-                pygame.display.update()
+            pygame.display.update()
 
 
 # Class for the Dropdown widget
@@ -926,7 +938,6 @@ def main():
     idx_tmp = idx
     COLOUR_KEY_tmp = COLOUR_KEY
     delais_tmp = delais
-
     app = ControllerOverlayApp(first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp)
     app.run()
     pygame.quit()

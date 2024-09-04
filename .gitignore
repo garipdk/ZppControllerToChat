@@ -128,3 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 python-*-embed-*/
+
+# Pyrate's trashes
+ZppControllerToChat_Env
+*.sublime-workspace
+*.sublime-project
+ROADMAP.md
