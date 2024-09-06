@@ -1,9 +1,14 @@
 import pygame
 from pynput.keyboard import Key, Controller
 import time
-import pyperclip
 import os
-import time
+import platform
+is_linux = False
+if platform.system() == "Linux":
+    is_linux = True
+else:
+    import pyperclip
+
 from time import sleep
 import sys
 import json
@@ -14,7 +19,43 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 upper = False
 keyboard = Controller()
 a_string = ""
-copied_glob = pyperclip.paste()
+copied_glob = ""
+import tkinter as tk
+
+def get_clipboard_data():
+    try:
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        clipboard_data = root.clipboard_get()
+        
+        # Check if the clipboard data is a string
+        if isinstance(clipboard_data, str):
+            return clipboard_data
+        else:
+            return ""
+    except tk.TclError:
+        return ""  # Return an empty string in case of an error
+
+def set_clipboard_data(data):
+    try:
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        
+        # Check if the provided data is a string, if not use an empty string
+        if not isinstance(data, str):
+            data = ""
+        
+        root.clipboard_clear()  # Clear the current clipboard contents
+        root.clipboard_append(data)  # Append new content to the clipboard
+        root.update()  # Required to update clipboard content
+    except tk.TclError:
+        pass
+
+
+if is_linux:
+    copied_glob = get_clipboard_data()
+else:
+    copied_glob = pyperclip.paste()
 last_keystroke = time.time() - 2.0
 first_copy = last_keystroke
 
@@ -213,14 +254,26 @@ def type_paste(first_string, second_string, delais: float):
     now = time.time()
     if (now - last_keystroke) > delais:
         last_keystroke = now
-        copied = pyperclip.paste()
+        copied = ""
+        if is_linux:
+            copied = get_clipboard_data()
+        else:
+            copied = pyperclip.paste()
         if copied[: len(copied_glob)] == copied_glob:
             if (now - first_copy) > 30:
                 first_copy = now
-                pyperclip.copy(copied_glob)
+                if is_linux:
+                    set_clipboard_data(copied_glob)
+                else:
+                    pyperclip.copy(copied_glob)
+
                 a_string = first_string
             else:
-                pyperclip.copy(copied + " " + a_string)
+                if is_linux:
+                    set_clipboard_data(copied + " " + a_string)
+                else:
+                    pyperclip.copy(copied + " " + a_string)
+
                 if a_string == first_string:
                     a_string = second_string
                 else:
@@ -228,10 +281,17 @@ def type_paste(first_string, second_string, delais: float):
         else:
             first_copy = now
             copied_glob = copied
-            pyperclip.copy(copied)
+            if is_linux:
+                set_clipboard_data(copied_glob)
+            else:
+                pyperclip.copy(copied_glob)
+
             a_string = first_string
 
-        print(pyperclip.paste())
+        if is_linux:
+            print(get_clipboard_data())
+        else:
+            print(pyperclip.paste())
         press_combined_key(Key.ctrl, "a")
         press_combined_key(Key.ctrl, "v")
         press_key(Key.enter)
