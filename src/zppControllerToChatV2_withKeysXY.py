@@ -372,7 +372,6 @@ class ControllerOverlayApp:
                     current_controller_type = "xbox1"
                 else:
                     current_controller_type = "ps4/switch"
-                num_tmp = 0
                 if joystick.get_button(0) == 1:
                     type_word("a", self.delais)
                     TMP_last = "a"
@@ -389,14 +388,26 @@ class ControllerOverlayApp:
                     type_word("y", self.delais)
                     TMP_last = "y"
 
+                num_tmp = 0
                 if current_controller_type == "xbox1":
                     num_tmp = joystick.get_button(5)
                 else:
                     num_tmp = joystick.get_button(10)
 
                 if num_tmp == 1:
-                    type_paste(self.first_string, self.second_string, self.delais)
+                    type_word("l", self.delais)
+                    TMP_last = "l"
 
+                num_tmp = 0
+                if current_controller_type == "xbox1":
+                    num_tmp = joystick.get_button(4)
+                else:
+                    num_tmp = joystick.get_button(9)
+
+                if num_tmp == 1:
+                    type_word("r", self.delais)
+                    TMP_last = "r"
+                    
                 if current_controller_type != "xbox1":
                     if joystick.get_button(11) == 1:
                         type_word("haut", self.delais)
@@ -487,6 +498,11 @@ class ControllerOverlayApp:
                         type_word("droite", self.delais)
                         TMP_last = "droite"
                 
+                if axes >= 6:
+                    trigger = joystick.get_axis(5)
+                    if trigger >= 0.:
+                        type_paste(self.first_string, self.second_string, self.delais)
+                        
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
                     button_ID = self.BUTTON_TRANSLATION(button_num, current_controller_type)

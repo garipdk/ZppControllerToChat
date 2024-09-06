@@ -153,9 +153,26 @@ class ControllerOverlayApp:
                 else:
                     num_tmp = joystick.get_button(10)
 
-                if num_tmp == 1:
-                    type_paste(self.first_string, self.second_string, self.delais)
+                num_tmp = 0
+                if current_controller_type == "xbox1":
+                    num_tmp = joystick.get_button(5)
+                else:
+                    num_tmp = joystick.get_button(10)
 
+                if num_tmp == 1:
+                    type_word("l", self.delais)
+                    TMP_last = "l"
+
+                num_tmp = 0
+                if current_controller_type == "xbox1":
+                    num_tmp = joystick.get_button(4)
+                else:
+                    num_tmp = joystick.get_button(9)
+
+                if num_tmp == 1:
+                    type_word("r", self.delais)
+                    TMP_last = "r"
+                
                 if joystick.get_button(11) == 1:
                     type_word("haut", self.delais)
 
@@ -229,6 +246,11 @@ class ControllerOverlayApp:
                         type_word("droite", self.delais)
 
 
+                if axes >= 6:
+                    trigger = joystick.get_axis(5)
+                    if trigger >= 0.:
+                        type_paste(self.first_string, self.second_string, self.delais)
+                        
 def type_word(word, delais: float):
     global last_keystroke, upper
 
