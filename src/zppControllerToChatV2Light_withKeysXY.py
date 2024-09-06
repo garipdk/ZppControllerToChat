@@ -255,8 +255,7 @@ def type_word(word, delais: float):
     global last_keystroke, upper
 
     now = time.time()
-
-    if (now - last_keystroke) > delais:
+    if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
         output = ""
         if upper:
@@ -274,7 +273,7 @@ def type_word(word, delais: float):
 def type_paste(first_string, second_string, delais: float):
     global a_string, copied_glob, last_keystroke, first_copy
     now = time.time()
-    if (now - last_keystroke) > delais:
+    if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
         copied = ""
         if is_linux:
@@ -317,6 +316,7 @@ def type_paste(first_string, second_string, delais: float):
         press_combined_key(Key.ctrl, "a")
         press_combined_key(Key.ctrl, "v")
         press_key(Key.enter)
+
 
 def write_to_cursor(word):
     press_combined_key(Key.ctrl, "a")
