@@ -160,8 +160,8 @@ class ControllerOverlayApp:
                     num_tmp = joystick.get_button(10)
 
                 if num_tmp == 1:
-                    type_word("l", self.delais)
-                    TMP_last = "l"
+                    type_word("r", self.delais)
+                    TMP_last = "r"
 
                 num_tmp = 0
                 if current_controller_type == "xbox1":
@@ -170,8 +170,8 @@ class ControllerOverlayApp:
                     num_tmp = joystick.get_button(9)
 
                 if num_tmp == 1:
-                    type_word("r", self.delais)
-                    TMP_last = "r"
+                    type_word("l", self.delais)
+                    TMP_last = "l"
                 
                 if joystick.get_button(11) == 1:
                     type_word("haut", self.delais)
