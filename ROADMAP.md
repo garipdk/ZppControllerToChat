@@ -6,3 +6,4 @@
 - [ ] permettre de remapper les touches
 - [ ] choisir le texte pour chaque touche
 - [ ] Ajouter un LineEdit avec ce qui sera spam (enlever le press-papier)
+- [ ] Version Bebou
