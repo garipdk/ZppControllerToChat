@@ -248,7 +248,7 @@ class ControllerOverlayApp:
 
                 if axes >= 6:
                     trigger = joystick.get_axis(5)
-                    if trigger >= 0.:
+                    if trigger > 0.:
                         type_paste(self.first_string, self.second_string, self.delais)
                         
 def type_word(word, delais: float):
