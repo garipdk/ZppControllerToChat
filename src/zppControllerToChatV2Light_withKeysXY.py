@@ -13,12 +13,13 @@ from time import sleep
 import sys
 import json
 from pathlib import Path
+import random
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 upper = False
 keyboard = Controller()
-a_string = ""
+is_first_string = True
 copied_glob = ""
 import tkinter as tk
 
@@ -251,71 +252,53 @@ class ControllerOverlayApp:
                     if trigger > 0.:
                         type_paste(self.first_string, self.second_string, self.delais)
                         
-def type_word(word, delais: float):
-    global last_keystroke, upper
+def type_word(word, delais: float, need_upper_lower = True, first_string = "", second_string = ""):
+    global last_keystroke, upper, is_first_string, copied_glob
 
     now = time.time()
     if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
         output = ""
-        if upper:
-            output = word.upper()
+        if need_upper_lower:
+            if upper:
+                output = word.upper()
+            else:
+                output = word
+            upper = not upper
         else:
-            output = word
-
+            output = copied_glob
+            if is_first_string:
+                copied_glob = copied_glob + " " + first_string
+            else:
+                copied_glob = copied_glob + " " + second_string
+            is_first_string = not is_first_string
         print(output)
 
         write_to_cursor(output)
 
-        upper = not upper
 
 
 def type_paste(first_string, second_string, delais: float):
     global a_string, copied_glob, last_keystroke, first_copy
     now = time.time()
-    if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
-        last_keystroke = now
-        copied = ""
-        if is_linux:
-            copied = get_clipboard_data()
-        else:
-            copied = pyperclip.paste()
-        if copied[: len(copied_glob)] == copied_glob:
-            if (now - first_copy) > 30:
-                first_copy = now
-                if is_linux:
-                    set_clipboard_data(copied_glob)
-                else:
-                    pyperclip.copy(copied_glob)
-
-                a_string = first_string
-            else:
-                if is_linux:
-                    set_clipboard_data(copied + " " + a_string)
-                else:
-                    pyperclip.copy(copied + " " + a_string)
-
-                if a_string == first_string:
-                    a_string = second_string
-                else:
-                    a_string = first_string
-        else:
+    copied = ""
+    if is_linux:
+        copied = get_clipboard_data()
+    else:
+        copied = pyperclip.paste()
+    if copied == copied_glob[:len(copied)]:
+        if (now - first_copy) > 30:
             first_copy = now
             copied_glob = copied
-            if is_linux:
-                set_clipboard_data(copied_glob)
-            else:
-                pyperclip.copy(copied_glob)
 
-            a_string = first_string
+            is_first_string = True
+    else:
+        first_copy = now - 2.0
+        copied_glob = copied
 
-        if is_linux:
-            print(get_clipboard_data())
-        else:
-            print(pyperclip.paste())
-        press_combined_key(Key.ctrl, "a")
-        press_combined_key(Key.ctrl, "v")
-        press_key(Key.enter)
+        is_first_string = True
+    type_word("", delais, False, first_string, second_string)
+
 
 
 def write_to_cursor(word):

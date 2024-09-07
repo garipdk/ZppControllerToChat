@@ -37,7 +37,7 @@ GREEN = (40, 200, 70)
 
 upper = False
 keyboard = Controller()
-a_string = ""
+is_first_string = True
 copied_glob = ""
 import tkinter as tk
 
@@ -81,12 +81,13 @@ first_copy = last_keystroke
 class ControllerOverlayApp:
 
     def __init__(
-        self, first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp,
+        self, base_string, first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp,
         trigger_deadzone: float = 0.002,
     ):
         self.first_string, self.second_string, self.idx, self.idx_tmp, self.COLOUR_KEY, self.COLOUR_KEY_tmp = first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp
         if self.idx < 0 or self.idx > 1:
             self.idx = 0
+        self.base_string = base_string
         self.file_path = file_path
         self.platform_map = {
             0: (gamepad_assets.PS4Assets, "ps4/switch"),
@@ -125,7 +126,7 @@ class ControllerOverlayApp:
         pygame.display.init()
         pygame.font.init()
         pygame.joystick.init()
-
+        pygame.key.set_repeat(300, 50)
         ### KONAMI_CODE
         self.code = ["haut","haut","bas","bas","gauche","droite","gauche","droite","b","a", "start"]
         self.code_last_keystroke = ''
@@ -171,26 +172,36 @@ class ControllerOverlayApp:
          
         # Create UI elements
         supported_gps = ("PlayStation 4", "Xbox One", "Switch")
-        self.line_edit0 = LineEdit(base_x - 30, base_y, base_width0, base_height, font, "Les deux phrases de spam qui alternent :", False)
-        self.line_edit1 = LineEdit(base_x, base_y + base_height + int(0), base_width, base_height, font, self.first_string)
-        self.ibeam_cursor_needed.append(self.line_edit1)
-        self.line_edit2 = LineEdit(base_x, base_y + 2 * base_height + int(10), base_width, base_height, font, self.second_string)
-        self.ibeam_cursor_needed.append(self.line_edit2)
+        self.line_edit_label_spam = LineEdit(base_x - 50, base_y, base_width0, base_height, font, "La phrase de spam :", False)
+        
+        self.line_edit_base_string = LineEdit(base_x, base_y + base_height + int(0), base_width - 50, base_height, font, self.base_string)
+        self.btn_base_string = Button(base_x + (base_width - 50) + 5, base_y + base_height + int(0), 75, base_height, font, "Coller", line_edit=self.line_edit_base_string)
+        self.ibeam_cursor_needed.append(self.line_edit_base_string)
+        
+        self.line_edit_label_spam_alterne = LineEdit(base_x - 50, base_y + 2 * base_height + int(10), base_width0 + 50, base_height, font, "Les deux phrases fin de spam qui alternent :", False)
+        
+        self.line_edit_first_string = LineEdit(base_x, base_y + 3 * base_height + int(20), base_width - 50, base_height, font, self.first_string)
+        self.btn_first_string = Button(base_x + (base_width - 50) + 5, base_y + 3 * base_height + int(20), 75, base_height, font, "Coller", line_edit=self.line_edit_first_string)
+        self.ibeam_cursor_needed.append(self.line_edit_first_string)
+        
+        self.line_edit_second_string = LineEdit(base_x, base_y + 4 * base_height + int(40), base_width - 50, base_height, font, self.second_string)
+        self.btn_second_string = Button(base_x + (base_width - 50) + 5, base_y + 4 * base_height + int(40), 75, base_height, font, "Coller", line_edit=self.line_edit_second_string)
+        self.ibeam_cursor_needed.append(self.line_edit_second_string)
 
 
-        self.validateButton = Button(base_x, base_y + 3 * base_height + int(20), base_width, base_height, font, "Valider", self.save_to_json, hover_color=GREEN)
+        self.validateButton = Button(base_x, base_y + 5 * base_height + int(60), base_width, base_height, font, "Valider", self.save_to_json, hover_color=GREEN)
 
-        self.colorButton = Button(base_x, base_y + 4 * base_height + int(40), base_width, base_height, font, "Couleur de fond", self.get_colour, hover_color=BLUE)
+        self.colorButton = Button(base_x, base_y + 6 * base_height + int(80), base_width, base_height, font, "Couleur de fond", self.get_colour, hover_color=BLUE)
 
-        self.controller_dropdown = Dropdown(base_x, base_y + 5 * base_height + int(60), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
+        self.controller_dropdown = Dropdown(base_x, base_y + 7 * base_height + int(100), base_width, base_height, supported_gps, font, self.save_to_json, self.idx)
         self.hand_cursor_needed.append(self.controller_dropdown)
 
-        self.line_edit4 = LineEdit(base_x, base_y + 6 * base_height + int(80), base_width, base_height, font, "Delais : ", False)
-        self.line_edit3 = LineEdit(base_x + 50, base_y + 7 * base_height + int(80), 50, base_height, font, f"{self.delais:.2f} s")
-        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 7 * base_height + int(80), 45, base_height, font, "+", self.add_delais)
-        self.btn_sub = Button(base_x, base_y + 7 * base_height + int(80), 45, base_height, font, "-", self.sub_delais)
+        self.line_edit_label_delais = LineEdit(base_x, base_y + 8 * base_height + int(120), base_width, base_height, font, "Delais : ", False)
+        self.line_edit_delais = LineEdit(base_x + 50, base_y + 9 * base_height + int(120), 50, base_height, font, f"{self.delais:.2f} s")
+        self.btn_add = Button(base_x + 45 + 5 + 50 + 5, base_y + 9 * base_height + int(120), 45, base_height, font, "+", self.add_delais)
+        self.btn_sub = Button(base_x, base_y + 9 * base_height + int(120), 45, base_height, font, "-", self.sub_delais)
 
-        self.radio_button_box = RadioButtonBox(base_x, base_y + 8 * base_height + int(100), self.screen.width - base_x - 10, 60, font, "Réglage avancé du delais", ["0.10s", "0.20s", "0.50s", "1s", "2s", "5s"], selected_option=2, button_font=font0)
+        self.radio_button_box = RadioButtonBox(base_x, base_y + 10 * base_height + int(140), self.screen.width - base_x - 10, 60, font, "Réglage avancé du delais", ["0.10s", "0.20s", "0.50s", "1s", "2s", "5s"], selected_option=2, button_font=font0)
 
     def add_delais(self):
         # recupper le bouton radio pour savoir quoi ajouter
@@ -205,22 +216,24 @@ class ControllerOverlayApp:
 
     def update_and_save_delais(self, new_delais: float):
         self.delais = new_delais
-        self.line_edit3.set_value(f"{new_delais:.2f} s")
+        self.line_edit_delais.set_value(f"{new_delais:.2f} s")
         self.save_to_json()
 
 
     def save_to_json(self, idx0 = -1):
         if (
-                (self.line_edit1.get_value() != self.line_edit2.get_value() and
-                (self.line_edit1.get_value() != self.first_string or
-                self.line_edit2.get_value() != self.second_string) and
-                self.line_edit1.get_value() != "" and
-                self.line_edit2.get_value() != ""
-                )
-                or
+                (self.line_edit_first_string.get_value() != self.line_edit_second_string.get_value() and
+                (self.line_edit_first_string.get_value() != self.first_string or
+                self.line_edit_second_string.get_value() != self.second_string) and
+                self.line_edit_first_string.get_value() != "" and
+                self.line_edit_second_string.get_value() != ""
+                ) or
                 idx0 not in [-1, self.idx] or self.COLOUR_KEY_tmp[0] != self.COLOUR_KEY[0] or
                 self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2] or
-                self.delais_tmp != self.delais
+                self.delais_tmp != self.delais or
+                (self.line_edit_base_string.get_value() != self.base_string and
+                 self.line_edit_base_string.get_value() != ""
+                )
             ):
             if idx0 not in [-1, self.idx]:
                 self.idx = idx0
@@ -232,16 +245,19 @@ class ControllerOverlayApp:
                 gamepad_type = self.platform_map[self.idx][1]
                 del self.BUTTON_TRANSLATION
                 self.BUTTON_TRANSLATION = gamepad_assets.ButtonTranslator(gamepad_type.lower())
-            if self.line_edit1.get_value() != self.line_edit2.get_value() and self.line_edit1.get_value() != self.first_string and self.line_edit1.get_value() != "":
-                self.first_string = self.line_edit1.get_value()
-            if self.line_edit1.get_value() != self.line_edit2.get_value() and self.line_edit2.get_value() != self.second_string and self.line_edit2.get_value() != "":
-                self.second_string = self.line_edit2.get_value()
+            if self.line_edit_first_string.get_value() != self.line_edit_second_string.get_value() and self.line_edit_first_string.get_value() != self.first_string and self.line_edit_first_string.get_value() != "":
+                self.first_string = self.line_edit_first_string.get_value()
+            if self.line_edit_first_string.get_value() != self.line_edit_second_string.get_value() and self.line_edit_second_string.get_value() != self.second_string and self.line_edit_second_string.get_value() != "":
+                self.second_string = self.line_edit_second_string.get_value()
+            if self.line_edit_base_string.get_value() != self.base_string and self.line_edit_base_string.get_value() != "":
+                self.base_string = self.line_edit_base_string.get_value()
             if (self.COLOUR_KEY_tmp[0] != self.COLOUR_KEY[0] or
                 self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2]):
                 self.COLOUR_KEY_tmp = self.COLOUR_KEY
             if self.delais_tmp != self.delais:
                 self.delais_tmp = self.delais
             data = {
+                "base_string": self.base_string,
                 "first_string": self.first_string,
                 "second_string": self.second_string,
                 "idx": self.idx,
@@ -316,15 +332,19 @@ class ControllerOverlayApp:
                     del joysticks[event.instance_id]
                 
                 self.controller_dropdown.handle_event(event)
-                self.line_edit1.handle_event(event)
-                self.line_edit2.handle_event(event)
+                self.line_edit_base_string.handle_event(event)
+                self.line_edit_first_string.handle_event(event)
+                self.line_edit_second_string.handle_event(event)
+                self.btn_base_string.handle_event(event)
+                self.btn_first_string.handle_event(event)
+                self.btn_second_string.handle_event(event)
                 self.btn_sub.handle_event(event)
                 self.btn_add.handle_event(event)
-                if(self.line_edit1.get_value() != self.line_edit2.get_value() and
-                    (self.line_edit1.get_value() != self.first_string or
-                    self.line_edit2.get_value() != self.second_string) and
-                self.line_edit1.get_value() != "" and
-                self.line_edit2.get_value() != "" 
+                if(self.line_edit_first_string.get_value() != self.line_edit_second_string.get_value() and
+                    (self.line_edit_first_string.get_value() != self.first_string or
+                    self.line_edit_second_string.get_value() != self.second_string) and
+                self.line_edit_first_string.get_value() != "" and self.line_edit_second_string.get_value() != "" and
+                self.line_edit_base_string != self.base_string and self.line_edit_base_string != ""
                 ):
                     self.validateButton.handle_event(event)
             
@@ -342,21 +362,28 @@ class ControllerOverlayApp:
                 self.screen.fill(self.COLOUR_KEY)
                 self.screen.blit(self.asset_map._base, (5, 5))
 
-                self.line_edit0.draw(self.screen)
-                self.line_edit1.draw(self.screen)
-                self.line_edit2.draw(self.screen)
-                self.line_edit4.draw(self.screen)
-                self.line_edit3.draw(self.screen)
+                self.btn_base_string.draw(self.screen)
+                self.btn_first_string.draw(self.screen)
+                self.btn_second_string.draw(self.screen)
+                self.line_edit_label_spam.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_base_string.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_label_spam_alterne.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_first_string.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_second_string.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_label_delais.draw(self.screen, self.COLOUR_KEY)
+                self.line_edit_delais.draw(self.screen, self.COLOUR_KEY)
                 self.btn_sub.draw(self.screen)
                 self.btn_add.draw(self.screen)
                 self.radio_button_box.draw(self.screen)
                 self.controller_dropdown.draw(self.screen)
 
-                if(self.line_edit1.get_value() != self.line_edit2.get_value() and
-                    (self.line_edit1.get_value() != self.first_string or
-                    self.line_edit2.get_value() != self.second_string) and
-                    self.line_edit1.get_value() != "" and
-                    self.line_edit2.get_value() != ""
+                if((self.line_edit_first_string.get_value() != self.line_edit_second_string.get_value() and
+                    (self.line_edit_first_string.get_value() != self.first_string or
+                    self.line_edit_second_string.get_value() != self.second_string) and
+                    self.line_edit_first_string.get_value() != "" and
+                    self.line_edit_second_string.get_value() != "") or
+                   (self.line_edit_base_string.get_value() != self.base_string and
+                    self.line_edit_base_string.get_value() != "")
                 ):
                     self.validateButton.draw(self.screen)
                 
@@ -502,7 +529,7 @@ class ControllerOverlayApp:
                 if axes >= 6:
                     trigger = joystick.get_axis(5)
                     if trigger > 0.:
-                        type_paste(self.first_string, self.second_string, self.delais)
+                        type_paste(self.base_string, self.first_string, self.second_string, self.delais)
                         
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
@@ -593,7 +620,7 @@ class ControllerOverlayApp:
                         font = pygame.font.Font(None, int(22))
                         self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
                         self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
-                        self.close_button.draw(self.screen)
+                        self.close_button.draw(self.screen, self.COLOUR_KEY)
                     ### KONAMI_CODE // END
 
             pygame.display.update()
@@ -686,24 +713,53 @@ class LineEdit:
         self.active = False
         self.color = GRAY
         self.border = border
-
+        self.scroll_offset = 0  # Horizontal scroll offset
+        self.cursor_index = len(text)  # Cursor position in text
         self.text_surface = self.font.render(self.text, True, BLACK)
-        self.text_rect = self.text_surface.get_rect()
-        self.cursor = pygame.Rect(self.text_rect.topright, (3, self.text_rect.height + 2))
+        self.cursor = pygame.Rect(self.text_surface.get_rect().topright, (3, self.text_surface.get_height() + 2))
         
-    def draw(self, screen):
+    def draw(self, screen, color):
+        self.color = color
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
-        self.text_surface = self.font.render(self.text, True, BLACK)
-        if self.border:
-            pygame.draw.rect(screen, self.color, self.rect, 2)
-        screen.blit(self.text_surface, (self.rect.x + (5 if self.border else 0), self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2) + 2 ))
-        if self.active and time.time() % 1 > 0.5:
-           # bounding rectangle of the text
-            text_rect = self.text_surface.get_rect(topleft = (self.rect.x + 5, self.rect.y + 10))
-            # set cursor position
-            self.cursor.midleft = text_rect.midright
-            pygame.draw.rect(screen, self.color, self.cursor)
+        
+        # Fill the input box background color
+        pygame.draw.rect(screen, self.color, self.rect)
 
+        # Re-render the text surface with updated text
+        self.text_surface = self.font.render(self.text, True, BLACK)
+
+        # Apply the scroll offset to determine which part of the text is visible
+        scroll_x = max(self.scroll_offset, 0)
+        
+        # Get the visible part of the text to draw it inside the input box
+        visible_text_width = min(self.rect.width - 10, self.text_surface.get_width() - scroll_x)
+        text_visible_surface = self.text_surface.subsurface((scroll_x, 0, visible_text_width, self.text_surface.get_height()))
+
+        # Blit the visible part of the text onto the main screen
+        screen.blit(text_visible_surface, (self.rect.x + 5, self.rect.y + (self.rect.height / 2) - (self.text_surface.get_height() / 2)))
+        
+        # Draw the border if necessary
+        if self.border:
+            if self.active:
+                pygame.draw.rect(screen, BLUE, self.rect, 2)
+            else:
+                pygame.draw.rect(screen, WHITE, self.rect, 2)
+
+        # Draw the blinking cursor if the widget is active
+        if self.active and time.time() % 1 > 0.5:
+            # Get the part of the text up to the cursor index
+            cursor_text = self.text[:self.cursor_index]
+            cursor_surface = self.font.render(cursor_text, True, BLACK)
+
+            # Calculate the position of the cursor based on the current scroll offset
+            cursor_x = self.rect.x + 5 + cursor_surface.get_width() - self.scroll_offset
+
+            # Update the cursor rectangle position
+            self.cursor.midleft = (cursor_x, self.rect.y + self.rect.height // 2)
+            
+            # Draw the cursor
+            pygame.draw.rect(screen, BLUE, self.cursor)
+    
     def handle_event(self, event):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
         
@@ -711,24 +767,74 @@ class LineEdit:
             if self.rect.collidepoint(event.pos):
                 self.active = True
                 self.color = BLUE
+                # Start selection
+                self.cursor_index = self.get_cursor_from_mouse(event.pos)
             else:
                 self.active = False
                 self.color = GRAY
-        if event.type == pygame.KEYDOWN and self.active:
-            if event.key == pygame.K_BACKSPACE:
-                self.text = self.text[:-1]
-            else:
-                self.text += event.unicode
+                self.selection_start = None  # Cancel selection if clicking outside
+        
+        elif event.type == pygame.MOUSEMOTION and self.active:
+            # Update cursor position while dragging (text selection)
+            if pygame.mouse.get_pressed()[0]:  # Left button is held down
+                self.cursor_index = self.get_cursor_from_mouse(event.pos)
+        
+        elif event.type == pygame.MOUSEBUTTONUP:
+            # End selection when mouse button is released
+            self.cursor_index = self.get_cursor_from_mouse(event.pos)
 
+        elif event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_BACKSPACE:
+                if self.cursor_index > 0:
+                    self.text = self.text[:self.cursor_index - 1] + self.text[self.cursor_index:]
+                    self.cursor_index -= 1
+            elif event.key == pygame.K_LEFT:
+                if self.cursor_index > 0:
+                    self.cursor_index -= 1
+            elif event.key == pygame.K_RIGHT:
+                if self.cursor_index < len(self.text):
+                    self.cursor_index += 1
+            elif event.key == pygame.K_END:
+                self.cursor_index = len(self.text)
+            elif event.key == pygame.K_HOME:
+                self.cursor_index = 0
+            else:
+                # Insert character at the cursor position
+                self.text = self.text[:self.cursor_index] + event.unicode + self.text[self.cursor_index:]
+                self.cursor_index += 1
+
+            # Re-render text surface to update cursor position
+            self.text_surface = self.font.render(self.text, True, BLACK)
+            text_width = self.font.size(self.text[:self.cursor_index])[0]  # Width of text up to cursor
+            
+            if text_width > self.rect.width - 10:  # If text width exceeds box width
+                self.scroll_offset = text_width - (self.rect.width - 10)
+            else:
+                self.scroll_offset = 0  # No need to scroll if text fits
+
+            # Ensure the scroll offset doesn't go below 0
+            self.scroll_offset = max(self.scroll_offset, 0)
+
+    def get_cursor_from_mouse(self, mouse_pos):
+        """Helper function to determine the cursor position based on mouse click."""
+        x_rel = mouse_pos[0] - (self.rect.x + 5) + self.scroll_offset
+        total_width = 0
+        for i, char in enumerate(self.text):
+            char_width = self.font.size(char)[0]
+            if total_width + char_width > x_rel:
+                return i
+            total_width += char_width
+        return len(self.text)
+    
     def get_value(self):
         return self.text
 
-    def set_value(self, text : str):
+    def set_value(self, text: str):
         self.text = text
-
+        self.cursor_index = len(text)
 # Class for the Button widget
 class Button:
-    def __init__(self, x, y, w, h, font, text, callback, callback_args:list[str] = None, base_color=LIGHT_GRAY, hover_color=GRAY):
+    def __init__(self, x, y, w, h, font, text, callback = None, callback_args:list[str] = None, base_color=LIGHT_GRAY, hover_color=GRAY, line_edit=None):
         self.rect = pygame.Rect(x, y, w, h)
         self.font = font
         self.text = text
@@ -737,6 +843,7 @@ class Button:
         self.hover_color = hover_color
         self.hovered = False
         self.callback_args = callback_args
+        self.line_edit = line_edit
         
     def draw(self, screen):
         global WHITE, BLACK, GRAY, LIGHT_GRAY, BLUE
@@ -754,10 +861,13 @@ class Button:
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
-                if self.callback_args:
-                    self.callback(''.join(self.callback_args))
-                else:
-                    self.callback()
+                if isinstance(self.line_edit, LineEdit):
+                    self.set_line_edit_text()
+                elif self.callback is not None:
+                    if self.callback_args:
+                        self.callback(''.join(self.callback_args))
+                    else:
+                        self.callback()
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
 
@@ -767,6 +877,14 @@ class Button:
     def set_hover_color(self, color):
         self.hover_color = color
 
+    def set_line_edit_text(self):
+        if isinstance(self.line_edit, LineEdit):
+            if is_linux:
+                self.line_edit.set_value(get_clipboard_data())
+            else:
+                self.line_edit.set_value(pyperclip.paste())
+            
+    
 
 # Class for the CheckBox widget
 class CheckBox:
@@ -857,7 +975,6 @@ class RadioButtonBox:
             self.buttons.append(btn)
 
     def draw(self, screen):
-
         self.maximized = self.checkbox.checked
         self.checkbox.draw(screen)
 
@@ -894,72 +1011,49 @@ class RadioButtonBox:
     def get_value(self):
         return self.buttons[self.selected_option].text
 
+def type_paste(base_string, first_string, second_string, delais: float):
+    global is_first_string, copied_glob, first_copy
+    now = time.time()
+    copied = base_string
+    if copied == copied_glob[:len(copied)]:
+        if (now - first_copy) > 30:
+            first_copy = now
+            copied_glob = copied
 
-def type_word(word, delais: float):
-    global last_keystroke, upper
+            is_first_string = True
+    else:
+        first_copy = now - 2.0
+        copied_glob = copied
+
+        is_first_string = True
+    type_word("", delais, False, first_string, second_string)
+
+
+def type_word(word, delais: float, need_upper_lower = True, first_string = "", second_string = ""):
+    global last_keystroke, upper, is_first_string, copied_glob
 
     now = time.time()
     if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
         output = ""
-        if upper:
-            output = word.upper()
+        if need_upper_lower:
+            if upper:
+                output = word.upper()
+            else:
+                output = word
+            upper = not upper
         else:
-            output = word
-
+            output = copied_glob
+            if is_first_string:
+                copied_glob = copied_glob + " " + first_string
+            else:
+                copied_glob = copied_glob + " " + second_string
+            is_first_string = not is_first_string
         print(output)
 
         write_to_cursor(output)
 
-        upper = not upper
 
-
-def type_paste(first_string, second_string, delais: float):
-    global a_string, copied_glob, last_keystroke, first_copy
-    now = time.time()
-    if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
-        last_keystroke = now
-        copied = ""
-        if is_linux:
-            copied = get_clipboard_data()
-        else:
-            copied = pyperclip.paste()
-        if copied[: len(copied_glob)] == copied_glob:
-            if (now - first_copy) > 30:
-                first_copy = now
-                if is_linux:
-                    set_clipboard_data(copied_glob)
-                else:
-                    pyperclip.copy(copied_glob)
-
-                a_string = first_string
-            else:
-                if is_linux:
-                    set_clipboard_data(copied + " " + a_string)
-                else:
-                    pyperclip.copy(copied + " " + a_string)
-
-                if a_string == first_string:
-                    a_string = second_string
-                else:
-                    a_string = first_string
-        else:
-            first_copy = now
-            copied_glob = copied
-            if is_linux:
-                set_clipboard_data(copied_glob)
-            else:
-                pyperclip.copy(copied_glob)
-
-            a_string = first_string
-
-        if is_linux:
-            print(get_clipboard_data())
-        else:
-            print(pyperclip.paste())
-        press_combined_key(Key.ctrl, "a")
-        press_combined_key(Key.ctrl, "v")
-        press_key(Key.enter)
 
 def write_to_cursor(word):
     press_combined_key(Key.ctrl, "a")
@@ -989,12 +1083,19 @@ def main():
 
     first_string = "o"
     second_string = "k"
+    base_string = ""
+    
+    if is_linux:
+        base_string = get_clipboard_data()
+    else:
+        base_string = pyperclip.paste()
     idx = 0
     delais = 1.5
     
     # File path
     file_path = os.path.join(str(Path.home()), "zppControllerToChatV2Save.json")
 
+    save_base_string = False
     # Step 1: Check if the file exists
     if os.path.exists(file_path):
         # Step 2: Read and parse the JSON file with UTF-8 encoding
@@ -1015,13 +1116,33 @@ def main():
                     COLOUR_KEY = (r, g, b)
                     delais = float(data["delais"])
                     print("Données récupérées :)")
+                if "base_string" in data:
+                    base_string = str(data["base_string"])
+                else:
+                    save_base_string = True
             except json.JSONDecodeError:
                 print("Error: File content is not valid JSON.")
 
+    if save_base_string:
+        data = {
+                "base_string": base_string,
+                "first_string": first_string,
+                "second_string": second_string,
+                "idx": idx,
+                "R": COLOUR_KEY[0],
+                "G": COLOUR_KEY[1],
+                "B": COLOUR_KEY[2],
+                "delais" : delais,
+            }
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+            print("Données sauvegardées :)")
+    
     idx_tmp = idx
     COLOUR_KEY_tmp = COLOUR_KEY
     delais_tmp = delais
-    app = ControllerOverlayApp(first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp)
+    app = ControllerOverlayApp(base_string, first_string, second_string, idx, idx_tmp, COLOUR_KEY, COLOUR_KEY_tmp, file_path, delais, delais_tmp)
     app.run()
     pygame.quit()
             
