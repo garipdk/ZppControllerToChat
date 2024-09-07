@@ -37,7 +37,7 @@ GREEN = (40, 200, 70)
 
 upper = False
 keyboard = Controller()
-is_first_string = True
+a_string = ""
 copied_glob = ""
 import tkinter as tk
 
@@ -247,6 +247,11 @@ class ControllerOverlayApp:
                 self.second_string = self.line_edit_second_string.get_value()
             if self.line_edit_base_string.get_value() != self.base_string and self.line_edit_base_string.get_value() != "":
                 self.base_string = self.line_edit_base_string.get_value()
+                if is_linux:
+                    set_clipboard_data(self.base_string)
+                else:
+                    pyperclip.copy(self.base_string)
+
             if (self.COLOUR_KEY_tmp[0] != self.COLOUR_KEY[0] or
                 self.COLOUR_KEY_tmp[1] != self.COLOUR_KEY[1] or self.COLOUR_KEY_tmp[2] != self.COLOUR_KEY[2]):
                 self.COLOUR_KEY_tmp = self.COLOUR_KEY
@@ -527,7 +532,7 @@ class ControllerOverlayApp:
                 if axes >= 6:
                     trigger = joystick.get_axis(5)
                     if trigger > 0.:
-                        type_paste(self.base_string, self.first_string, self.second_string, self.delais)
+                        type_paste(self.first_string, self.second_string, self.delais)
                         
                 for button_num in range(joystick.get_numbuttons()):
                     button_is_pressed = joystick.get_button(button_num)
@@ -1029,13 +1034,16 @@ def type_word(word, delais: float):
         upper = not upper
 
 
-def type_paste(base_string, first_string, second_string, delais: float):
+def type_paste(first_string, second_string, delais: float):
     global a_string, copied_glob, last_keystroke, first_copy
     now = time.time()
     if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
-        copied = base_string
-        
+        copied = ""
+        if is_linux:
+            copied = base_string
+        else:
+            copied = pyperclip.paste()
         if copied[: len(copied_glob)] == copied_glob:
             if (now - first_copy) > 30:
                 first_copy = now
@@ -1158,6 +1166,11 @@ def main():
             json.dump(data, file, ensure_ascii=False, indent=4)
             print("Données sauvegardées :)")
     copied_glob = base_string
+    
+    if is_linux:
+        set_clipboard_data(base_string)
+    else:
+        pyperclip.copy(base_string)
     idx_tmp = idx
     COLOUR_KEY_tmp = COLOUR_KEY
     delais_tmp = delais

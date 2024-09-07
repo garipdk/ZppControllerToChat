@@ -19,7 +19,7 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 upper = False
 keyboard = Controller()
-is_first_string = True
+a_string = ""
 copied_glob = ""
 import tkinter as tk
 
@@ -272,13 +272,16 @@ def type_word(word, delais: float):
         upper = not upper
 
 
-def type_paste(base_string, first_string, second_string, delais: float):
+def type_paste(first_string, second_string, delais: float):
     global a_string, copied_glob, last_keystroke, first_copy
     now = time.time()
     if (now - last_keystroke) > delais + random.uniform(0.05, 0.1):
         last_keystroke = now
-        copied = base_string
-        
+        copied = ""
+        if is_linux:
+            copied = base_string
+        else:
+            copied = pyperclip.paste()
         if copied[: len(copied_glob)] == copied_glob:
             if (now - first_copy) > 30:
                 first_copy = now
@@ -343,10 +346,17 @@ def main():
     first_string = "o"
     second_string = "k"
     delais = 1.5
+    base_string = ""
+    
+    if is_linux:
+        base_string = get_clipboard_data()
+    else:
+        base_string = pyperclip.paste()
     
     # File path
     file_path = os.path.join(str(Path.home()), "zppControllerToChatV2Save.json")
 
+    save_base_string = False
     # Step 1: Check if the file exists
     print(f"fichier de sauvegarde : \"{file_path}\"")
     if os.path.exists(file_path):
@@ -367,11 +377,18 @@ def main():
                         first_string = "o"
                         second_string = "k"
                     delais = float(data["delais"])
+                if "base_string" in data:
+                    base_string = str(data["base_string"])
+                else:
+                    save_base_string = True
                     
             except json.JSONDecodeError:
                 print("Error: File content is not valid JSON.")
     else:
+        save_base_string = True
+    if save_base_string:
         data = {
+                "base_string": base_string,
                 "first_string": first_string,
                 "second_string": second_string,
                 "idx": 0,
@@ -386,7 +403,11 @@ def main():
                 print("Données sauvegardées :)")
 
     print("(modifier les valeur du ficier de sauvegarde à la main pour les charger au relancement du logiciel)")
-
+    copied_glob = base_string
+    if is_linux:
+        set_clipboard_data(base_string)
+    else:
+        pyperclip.copy(base_string)
     app = ControllerOverlayApp(first_string, second_string, delais)
     app.run()
     pygame.quit()
