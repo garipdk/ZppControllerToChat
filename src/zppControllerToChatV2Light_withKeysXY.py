@@ -74,6 +74,7 @@ class ControllerOverlayApp:
         
         pygame.init()
         pygame.joystick.init()
+        pygame.key.set_repeat(300, 50)
         num_controllers = pygame.joystick.get_count()
         print(
             "Lezgo avec "
@@ -125,7 +126,11 @@ class ControllerOverlayApp:
                         f"Manette {joysticks[event.instance_id].get_name()} {event.instance_id} déconnecté"
                     )
                     del joysticks[event.instance_id]
-            
+
+                if event.type == pygame.JOYAXISMOTION:
+                    if event.axis == 4 and event.value > 0.:
+                        press_combined_key(Key.ctrl, Key.f5)
+                
             
             for joystick in joysticks.values():
                 current_controller_type = ""

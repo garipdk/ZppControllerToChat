@@ -332,6 +332,10 @@ class ControllerOverlayApp:
                     )
                     del joysticks[event.instance_id]
                 
+                if event.type == pygame.JOYAXISMOTION:
+                    if event.axis == 4 and event.value > 0.:
+                        press_combined_key(Key.ctrl, Key.f5)
+                
                 self.controller_dropdown.handle_event(event)
                 self.line_edit_base_string.handle_event(event)
                 self.line_edit_first_string.handle_event(event)
