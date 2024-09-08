@@ -627,7 +627,7 @@ class ControllerOverlayApp:
                         font = pygame.font.Font(None, int(22))
                         self.text_surface = font.render("Pixel art by ShinyCyan 2022", True, WHITE)
                         self.screen.blit(self.text_surface, ((self.screen.width / 2) - (self.code_image.width / 2), 10 + self.code_image.height + 10))
-                        self.close_button.draw(self.screen, self.COLOUR_KEY)
+                        self.close_button.draw(self.screen)
                     ### KONAMI_CODE // END
 
             pygame.display.update()
